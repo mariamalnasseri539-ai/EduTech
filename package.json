@@ -1,0 +1,22 @@
+{
+  "name": "adaptive-learning-platform",
+  "version": "1.0.0",
+  "description": "Personalized Student-Centered Adaptive Learning Platform Powered by Generative AI",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "server": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "adaptive-learning",
+    "zero-content",
+    "generative-ai",
+    "gemini"
+  ],
+  "author": "",
+  "license": "ISC"
+}
