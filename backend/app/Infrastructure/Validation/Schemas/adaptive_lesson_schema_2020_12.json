@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AdaptiveLessonPayload",
+  "description": "JSON Schema Draft 2020-12 for zero-content dynamically synthesized adaptive lessons",
+  "type": "object",
+  "required": [
+    "lesson_id",
+    "topic_id",
+    "topic_title",
+    "difficulty",
+    "target_bloom",
+    "zpd_rationale",
+    "cards",
+    "questions"
+  ],
+  "properties": {
+    "lesson_id": {
+      "type": "string"
+    },
+    "topic_id": {
+      "type": "string"
+    },
+    "topic_title": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["beginner", "intermediate", "advanced", "mastery"]
+    },
+    "target_bloom": {
+      "type": "string",
+      "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"]
+    },
+    "zpd_rationale": {
+      "type": "string"
+    },
+    "cards": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "title",
+          "summary",
+          "content_markdown",
+          "key_takeaways",
+          "speech_transcript"
+        ],
+        "properties": {
+          "card_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "content_markdown": {
+            "type": "string"
+          },
+          "key_takeaways": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "analogy": {
+            "type": ["string", "null"]
+          },
+          "code_snippet": {
+            "type": ["object", "null"],
+            "properties": {
+              "language": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "explanation": {
+                "type": "string"
+              }
+            }
+          },
+          "speech_transcript": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "question_id",
+          "prompt",
+          "options",
+          "correct_option_index",
+          "explanation",
+          "hint"
+        ],
+        "properties": {
+          "question_id": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "string"
+            }
+          },
+          "correct_option_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "misconception_notes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "hint": {
+            "type": "string"
+          },
+          "concept_tested": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "code_challenge": {
+      "type": ["object", "null"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "starter_code": {
+          "type": "string"
+        },
+        "solution_stub": {
+          "type": "string"
+        },
+        "test_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "input": {},
+              "expected_output": {},
+              "is_hidden": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

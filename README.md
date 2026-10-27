@@ -1,123 +1,98 @@
-# Personalized Student-Centered Adaptive Learning Platform Powered by Generative AI
-## Based on Strict Zero-Content Cloud Architecture & Domain-Driven Design (DDD)
+# إديوتك | EduTech
+## Personalized Adaptive Learning Platform Powered by Generative AI
+### Clean Architecture, Domain-Driven Design (DDD) & Zero-Content Cloud Architecture
 
 ---
 
-## 1. System Overview & Core Architectural Paradigm
-
-This platform is an enterprise-grade adaptive learning ecosystem implementing a **Zero-Content Cloud Architecture**:
-- **Zero-Content Invariant:** The database **MUST NOT** store pre-authored educational lessons or static explanations.
-- **Dynamic On-the-Fly Synthesis:** All lesson cards, interactive explanations, code challenges, and assessment questions are synthesized dynamically by **Google Gemini 1.5** based on the student's real-time **Knowledge State** (Bayesian mastery scores, inferred misconceptions, and Zone of Proximal Development - ZPD).
-- **Cloud Firestore Storage Constraints:** Cloud Firestore stores exclusively:
-  1. Student Identity (`students/{firebaseUid}`)
-  2. Approved Course Syllabi & Topic Maps (`courses/{courseId}`)
-  3. Mastery Indicators & Diagnostic Misconceptions (`knowledge_states/{studentId}_{courseId}`)
-  4. Attempt & Submission Logs (`attempts/{attemptId}`)
+## 📌 1. Project Overview
+**EduTech (إديوتك)** is an enterprise-grade adaptive learning platform designed for real-time, student-centered education.
+- **Backend:** Laravel 11 (PHP 8.2+) structured using strict Domain-Driven Design (DDD) principles.
+- **Frontend:** React 18, TypeScript, Tailwind CSS, Vite.
+- **Identity & Database:** Firebase Authentication & Google Cloud Firestore.
+- **AI Synthesis Engine:** Google Gemini 1.5 API for dynamic, on-the-fly instructional generation.
 
 ---
 
-## 2. Bounded Contexts & Domain-Driven Design (DDD)
+## 🗂️ 2. Repository Structure
 
 ```text
-app/
-├── Domain/
-│   ├── Learning/
-│   │   ├── Entities/ (Lesson, ExplanationCard, Question)
-│   │   ├── ValueObjects/ (TopicId, DifficultyLevel, BloomTaxonomyLevel)
-│   │   ├── Repositories/ (CourseRepositoryInterface, LessonRepositoryInterface)
-│   │   └── Services/ (PromptBuilderService)
-│   ├── KnowledgeState/
-│   │   ├── Entities/ (StudentKnowledgeState, SkillScore, WeaknessPoint)
-│   │   ├── Enums/ (CognitiveStatus: Unassessed, ActiveLearning, Assessing, GuidedReview, Mastered)
-│   │   └── Repositories/ (KnowledgeStateRepositoryInterface)
-│   ├── Assessment/
-│   │   ├── Entities/ (ChallengeAttempt, CodeSubmission)
-│   │   └── Repositories/ (AttemptRepositoryInterface)
-│   └── Identity/
-│       ├── Entities/ (Student, Admin)
-│       └── Repositories/ (StudentRepositoryInterface)
+EduTech/
+├── backend/                  # Laravel 11 DDD Architecture
+│   ├── app/
+│   │   ├── Domain/           # Core Entities, Value Objects, Repository Interfaces
+│   │   │   ├── Identity/     # Student & Admin Entities
+│   │   │   ├── KnowledgeState/# Bayesian mastery scores & ZPD state
+│   │   │   ├── Learning/     # Course & Topic contracts
+│   │   │   └── Assessment/   # Challenge attempts & submissions
+│   │   ├── Application/      # Use Cases & DTOs
+│   │   ├── Infrastructure/   # Firebase Client, Gemini AI Client, JSON Validator
+│   │   └── UI/Http/          # API Controllers & Firebase Auth Middleware
+│   ├── config/               # App, Firebase, Gemini configuration
+│   └── routes/api.php        # API Endpoints
 │
-├── Application/
-│   ├── UseCases/
-│   │   ├── Learning/
-│   │   │   ├── RequestAdaptiveLessonUseCase.php
-│   │   │   └── AskSmartAssistantUseCase.php
-│   │   ├── Assessment/
-│   │   │   ├── SubmitQuizAnswerUseCase.php
-│   │   │   └── VerifyCodeChallengeUseCase.php
-│   │   └── Knowledge/
-│   │       ├── InitializePlacementTestUseCase.php
-│   │       └── UpdateKnowledgeStateUseCase.php
-│   └── DTOs/
-│       ├── LessonCardDTO.php
-│       ├── QuizAttemptDTO.php
-│       ├── CodeVerificationResultDTO.php
-│       └── AdaptiveLessonResponseDTO.php
+├── frontend/                 # React 18 (TypeScript + Tailwind CSS + Vite)
+│   ├── src/
+│   │   ├── components/       # AuthCardLayout, LoadingScreen, Navbar, Theme
+│   │   ├── context/          # AuthContext, ThemeContext
+│   │   ├── services/         # firebaseConfig (Auth & Firestore), apiClient (Axios Bearer interceptor)
+│   │   └── pages/
+│   │       ├── auth/         # Creative LoginPage & RegisterPage
+│   │       ├── WelcomePage.tsx # Clean Post-Login Landing Page
+│   │       ├── admin/        # 🛠️ Team Workspace for Admin Interfaces
+│   │       │   └── AdminDashboard.tsx
+│   │       └── student/      # 🛠️ Team Workspace for Student Interfaces
+│   │           └── StudentDashboard.tsx
 │
-├── Infrastructure/
-│   ├── AI/
-│   │   ├── GeminiApiClient.php (Structured output mode, Temperature = 0.2)
-│   │   └── PromptTemplates/ (GuidedSystemPrompt.php)
-│   ├── Validation/
-│   │   ├── JSONValidatorService.php (Draft 2020-12 validator with silent self-healing retry)
-│   │   └── Schemas/ (adaptive_lesson_schema_2020_12.json, code_evaluation_schema_2020_12.json)
-│   ├── Persistence/Firebase/
-│   │   ├── FirebaseClient.php
-│   │   └── Repositories/ (FirestoreStudentRepo, FirestoreKnowledgeRepo, FirestoreCourseRepo, FirestoreAttemptRepo, CacheLessonRepository)
-│   └── ExternalServices/
-│       └── TextToSpeechService.php
-│
-└── UI/Http/
-    ├── Controllers/ (AuthController, CourseController, LessonController, AssessmentController, AdminDashboardController)
-    ├── Requests/ (RequestLessonRequest, SubmitCodeRequest, SubmitQuizRequest)
-    └── Middleware/ (FirebaseAuthMiddleware, CheckAdminRole)
+├── run.bat                   # 1-Click Windows Launcher for both Frontend & Backend
+├── start.ps1                 # PowerShell Launcher
+└── package.json              # Root project dependencies & scripts
 ```
 
 ---
 
-## 3. Tech Stack & Integration Contracts
+## 🚀 3. Quick Start Guide
 
-- **Backend:** Laravel 11 / PHP 8.2+ strictly organized with Domain-Driven Design and Clean Architecture.
-- **Database & Identity:** Cloud Firestore & Firebase Auth via `kreait/laravel-firebase`.
-- **AI Engine:** Google Gemini 1.5 API in structured JSON mode (`temperature: 0.2`) with API keys hidden securely server-side.
-- **Output Validation:** JSON Schema Draft 2020-12 with automated, silent self-healing retry logic.
-- **Frontend:** React 18, TypeScript, TailwindCSS, Monaco/CodeMirror code editor, native Web Speech API Text-to-Speech (TTS).
+### Prerequisites
+- PHP 8.2+ with `curl`, `mbstring`, `openssl`, `sodium`, and `zip` extensions enabled.
+- Node.js 18+ and npm.
+- Composer 2+.
 
----
+### 1-Click Launch (Windows)
+Double-click `run.bat` in the project root:
+- Starts Laravel Backend on: `http://localhost:8000`
+- Starts React Vite Frontend on: `http://localhost:3000`
 
-## 4. API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/auth/me` | Fetch authenticated student profile |
-| `GET` | `/api/courses` | List syllabus topic DAGs |
-| `GET` | `/api/courses/{id}` | View course syllabus metadata |
-| `GET` | `/api/courses/{id}/knowledge-state` | Fetch real-time Bayesian mastery & ZPD |
-| `POST` | `/api/lessons/request` | On-demand adaptive lesson synthesis |
-| `POST` | `/api/lessons/ask-assistant` | Contextual AI teaching assistant drawer |
-| `POST` | `/api/assessment/quiz` | Formative quiz check submission |
-| `POST` | `/api/assessment/code` | Automated code challenge evaluation |
-| `GET` | `/api/admin/topic-maps` | Curriculum designer syllabus inspection |
-| `GET` | `/api/admin/cohort/{id}` | Cohort skill distributions & misconceptions |
-| `GET` | `/api/admin/telemetry` | AI synthesis compliance & latency telemetry |
-
----
-
-## 5. Getting Started
-
-### Backend Setup:
+### Manual Launch
 ```bash
+# Terminal 1: Backend
 cd backend
-cp .env.example .env
-# Configure GEMINI_API_KEY and FIREBASE_CREDENTIALS in .env
 composer install
-php artisan serve
-```
+cp .env.example .env
+php artisan serve --port=8000
 
-### Frontend Setup:
-```bash
+# Terminal 2: Frontend
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:3000` to interact with the platform.
+
+---
+
+## 🔐 4. Environment & Firebase Setup
+
+1. **Backend Firebase Service Account:**
+   Place your downloaded Firebase service account JSON key in:
+   `backend/storage/app/firebase/firebase-credentials.json`
+
+2. **Frontend Firebase Web Configuration:**
+   Create `frontend/.env` based on `frontend/.env.example` and set:
+   ```env
+   VITE_FIREBASE_API_KEY=your_firebase_web_api_key_here
+   VITE_FIREBASE_APP_ID=your_firebase_app_id_here
+   ```
+
+---
+
+## 👥 5. Team Workspace Instructions
+- **Admin Team:** Implement all administrator interfaces and analytics inside `frontend/src/pages/admin/`.
+- **Student Team:** Implement all student learning interfaces inside `frontend/src/pages/student/`.

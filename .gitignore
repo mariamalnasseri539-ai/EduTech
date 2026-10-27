@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+vendor/
+backend/vendor/
+frontend/node_modules/
+
+# Environment and sensitive credentials
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+*firebase-credentials*.json
+backend/storage/app/firebase/*
+!backend/storage/app/firebase/.gitkeep
+*.pem
+*.key
+
+# Build outputs
+dist/
+frontend/dist/
+build/
+
+# Laravel Storage & Cache
+backend/storage/logs/*.log
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*.php
+!backend/bootstrap/cache/.gitkeep
+!backend/storage/**/.gitkeep
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

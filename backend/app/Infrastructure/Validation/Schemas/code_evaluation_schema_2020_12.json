@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CodeEvaluationPayload",
+  "description": "JSON Schema Draft 2020-12 for automated code challenge verification",
+  "type": "object",
+  "required": [
+    "score",
+    "execution_status",
+    "passed_test_cases",
+    "total_test_cases",
+    "ai_feedback",
+    "inferred_weaknesses",
+    "refactored_solution"
+  ],
+  "properties": {
+    "score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": ["PASSED", "FAILED", "SYNTAX_ERROR", "TIMEOUT", "LOGIC_ERROR"]
+    },
+    "passed_test_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_test_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ai_feedback": {
+      "type": "string"
+    },
+    "inferred_weaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "refactored_solution": {
+      "type": "string"
+    },
+    "test_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "test_index": {
+            "type": "integer"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "actual_output": {},
+          "expected_output": {},
+          "error_message": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  }
+}
