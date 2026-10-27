@@ -1,9 +1,9 @@
 import React from 'react';
-import { Sparkles, Network, BarChart3, BookOpen, Sun, Moon, LogOut } from 'lucide-react';
+import { Sparkles, Network, BarChart3, BookOpen, LogOut } from 'lucide-react';
 import { CognitiveStatus } from '../types/knowledge';
-import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { PlatformLogo } from './common/PlatformLogo';
+import { ThemeToggle } from './common/ThemeToggle';
 
 interface NavbarProps {
   activeTab: 'lesson' | 'topic-map' | 'admin';
@@ -16,7 +16,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   cognitiveStatus,
 }) => {
-  const { theme, toggleTheme } = useTheme();
   const { userProfile, role, logout } = useAuth();
 
   const studentName = userProfile?.display_name || 'طالب';
@@ -127,14 +126,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            className="p-2 rounded-xl bg-slate-100 dark:bg-[#2F2F2F] border border-slate-200 dark:border-[#3d3d3d] text-slate-700 dark:text-slate-200 hover:border-[#FFCB74] dark:hover:border-[#FFCB74] transition-all"
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4 text-[#FFCB74]" /> : <Moon className="h-4 w-4 text-slate-700" />}
-          </button>
+          {/* Theme Toggle Capsule Button (كبس زر لمبة مائي) */}
+          <ThemeToggle />
 
           {/* User Avatar & Logout */}
           <div className="flex items-center space-x-2 space-x-reverse pr-2 border-r border-slate-200 dark:border-[#333333]">
@@ -157,3 +150,5 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+
+export default Navbar;

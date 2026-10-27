@@ -1,7 +1,7 @@
 import React from 'react';
-import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { PlatformLogo } from '../common/PlatformLogo';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface AuthCardLayoutProps {
   children: React.ReactNode;
@@ -18,8 +18,6 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
   activeTab,
   onTabChange,
 }) => {
-  const { theme, toggleTheme } = useTheme();
-
   return (
     <div className="min-h-screen w-full flex flex-col justify-between overflow-y-auto transition-colors duration-300 bg-[#F6F6F6] dark:bg-[#111111] text-slate-800 dark:text-slate-100 font-sans relative selection:bg-[#FFCB74]/40 selection:text-slate-900">
       {/* Background Decorative Ambient Gradients & Mesh Aura */}
@@ -48,24 +46,8 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
           </div>
         </div>
 
-        {/* Theme Toggle Button */}
-        <button
-          onClick={toggleTheme}
-          aria-label="تبديل المظهر"
-          className="flex items-center space-x-2 space-x-reverse px-3 py-1.5 rounded-xl bg-white dark:bg-[#2F2F2F] border border-slate-200 dark:border-[#3a3a3a] text-slate-700 dark:text-slate-200 shadow-sm hover:border-[#FFCB74] dark:hover:border-[#FFCB74] transition-all transform hover:scale-105 text-xs font-semibold"
-        >
-          {theme === 'dark' ? (
-            <>
-              <Sun className="h-4 w-4 text-[#FFCB74] animate-spin-slow" />
-              <span>الوضع الفاتح</span>
-            </>
-          ) : (
-            <>
-              <Moon className="h-4 w-4 text-slate-700" />
-              <span>الوضع الليلي</span>
-            </>
-          )}
-        </button>
+        {/* Theme Toggle Button (كبس زر لمبة مائي لشمس وقمر) */}
+        <ThemeToggle />
       </header>
 
       {/* Main Centered Card Container */}
