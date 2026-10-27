@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Sparkles, GraduationCap } from 'lucide-react';
+import { Sun, Moon, Sparkles } from 'lucide-react';
+import { PlatformLogo } from '../common/PlatformLogo';
 
 interface AuthCardLayoutProps {
   children: React.ReactNode;
@@ -31,14 +32,7 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
       <header className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between z-10 shrink-0">
         {/* Brand Logo with Glow */}
         <div className="flex items-center space-x-3 space-x-reverse group cursor-default">
-          <div className="relative">
-            <div className="absolute -inset-1 rounded-2xl bg-[#FFCB74]/40 blur-sm group-hover:blur-md transition-all opacity-70" />
-            <div className="relative h-10 w-10 rounded-2xl bg-gradient-to-tr from-[#FFCB74] to-amber-200 p-0.5 shadow-md shadow-[#FFCB74]/20 flex items-center justify-center">
-              <div className="h-full w-full bg-white dark:bg-[#111111] rounded-[14px] flex items-center justify-center transition-colors">
-                <GraduationCap className="h-5 w-5 text-[#FFCB74] group-hover:scale-110 transition-transform" />
-              </div>
-            </div>
-          </div>
+          <PlatformLogo size={46} />
           <div>
             <div className="flex items-center space-x-2 space-x-reverse">
               <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogOut, User, Shield } from 'lucide-react';
 import { AdminDashboard } from './admin/AdminDashboard';
 import { StudentDashboard } from './student/StudentDashboard';
+import { PlatformLogo } from '../components/common/PlatformLogo';
 
 export const WelcomePage: React.FC = () => {
   const { userProfile, role, logout } = useAuth();
@@ -51,7 +52,8 @@ export const WelcomePage: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-white dark:bg-[#111111] flex flex-col items-center justify-center p-6 text-slate-800 dark:text-slate-100">
       <div className="text-center max-w-md w-full space-y-6">
-        <div className="space-y-2">
+        <div className="flex flex-col items-center space-y-3">
+          <PlatformLogo size={72} />
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Welcome
           </h1>

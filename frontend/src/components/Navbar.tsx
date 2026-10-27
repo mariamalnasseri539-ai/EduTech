@@ -1,8 +1,9 @@
 import React from 'react';
-import { Sparkles, GraduationCap, Network, BarChart3, BookOpen, Sun, Moon, LogOut } from 'lucide-react';
+import { Sparkles, Network, BarChart3, BookOpen, Sun, Moon, LogOut } from 'lucide-react';
 import { CognitiveStatus } from '../types/knowledge';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { PlatformLogo } from './common/PlatformLogo';
 
 interface NavbarProps {
   activeTab: 'lesson' | 'topic-map' | 'admin';
@@ -55,11 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center space-x-3 space-x-reverse">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-[#FFCB74] to-amber-200 p-0.5 shadow-md shadow-[#FFCB74]/20 flex items-center justify-center shrink-0">
-            <div className="h-full w-full bg-white dark:bg-[#111111] rounded-[14px] flex items-center justify-center">
-              <GraduationCap className="h-5 w-5 text-[#FFCB74]" />
-            </div>
-          </div>
+          <PlatformLogo size={42} />
           <div>
             <div className="flex items-center space-x-2 space-x-reverse">
               <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
