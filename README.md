@@ -50,7 +50,60 @@ EduTech/
 
 ---
 
-## 🚀 3. Quick Start Guide
+## 🎨 3. Design System & Theme Guidelines (نظام التصميم والألوان)
+
+### Color Palette (لوحة الألوان المعتمدة)
+The platform follows a strict, high-contrast, modern aesthetic:
+
+| Role / Element | HEX Code | Tailwind Token | Light Mode Usage | Dark Mode Usage |
+|---|---|---|---|---|
+| **Primary Accent / Gold** | `#FFCB74` | `text-[#FFCB74]`, `bg-[#FFCB74]` | Highlights, Buttons, Active Badges | Highlights, Action Buttons, Golden Glow |
+| **Pitch Black / Dark Surface** | `#111111` | `bg-[#111111]`, `dark:bg-[#111111]` | Primary dark text, deep accents | Main dark background (`body`) |
+| **Charcoal / Elevation Card** | `#2F2F2F` | `bg-[#2F2F2F]`, `dark:bg-[#2F2F2F]` | Secondary borders, dark cards | Elevated cards, dialogs, form inputs |
+| **Off-White / Soft Surface** | `#F6F6F6` | `bg-[#F6F6F6]`, `dark:bg-[#111111]` | Main light background (`body`) | - |
+| **Pure White** | `#FFFFFF` | `bg-white`, `dark:bg-[#2F2F2F]` | Cards, inputs, dialog containers | Text in dark mode, pure highlights |
+
+### Dark & Light Mode Implementation (آلية تبديل الثيم)
+- **Theme Provider:** `frontend/src/context/ThemeContext.tsx`
+  - Provides `theme` (`'dark' | 'light'`) and `toggleTheme()`.
+  - Toggles the `.dark` class directly on the root `<html>` element.
+  - Automatically remembers the user's choice in browser `localStorage`.
+- **Styling Best Practices for Team Members:**
+  Use Tailwind's `dark:` modifier on every visual element:
+  ```tsx
+  // Background and Card containers:
+  className="bg-[#F6F6F6] dark:bg-[#111111]"
+  className="bg-white dark:bg-[#2F2F2F] border border-slate-200 dark:border-[#3d3d3d]"
+
+  // Text colors:
+  className="text-slate-900 dark:text-white"
+  className="text-slate-600 dark:text-slate-400"
+
+  // Primary buttons & highlights:
+  className="bg-[#FFCB74] text-[#111111] hover:bg-[#ffd387]"
+  ```
+
+---
+
+## ✍️ 4. Typography & Fonts (الخطوط والطباعة)
+
+The application embeds three specialized font families imported from Google Fonts:
+
+| Font Family | Primary Usage | Supported Weights | Implementation |
+|---|---|---|---|
+| **Cairo (كايرو)** | الخط العربي الأساسي لجميع العناوين والنصوص والأزرار | `400, 500, 600, 700, 800, 900` | Google Fonts (Cairo) |
+| **Inter** | Primary Latin/English typography for international UI | `300, 400, 500, 600, 700, 800` | Google Fonts (Inter) |
+| **Fira Code** | Monospace typography for code snippets, tokens, and IDs | `400, 500, 600` | Google Fonts (Fira Code) |
+
+- **Font Import:** Configured in `frontend/index.html`:
+  ```html
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  ```
+- **Default Font Stack:** `font-sans` defaults to `'Cairo', 'Inter', sans-serif`.
+
+---
+
+## 🚀 5. Quick Start Guide
 
 ### Prerequisites
 - PHP 8.2+ with `curl`, `mbstring`, `openssl`, `sodium`, and `zip` extensions enabled.
@@ -78,7 +131,7 @@ npm run dev
 
 ---
 
-## 🔐 4. Environment & Firebase Setup
+## 🔐 6. Environment & Firebase Setup
 
 1. **Backend Firebase Service Account:**
    Place your downloaded Firebase service account JSON key in:
@@ -93,6 +146,6 @@ npm run dev
 
 ---
 
-## 👥 5. Team Workspace Instructions
+## 👥 7. Team Workspace Instructions
 - **Admin Team:** Implement all administrator interfaces and analytics inside `frontend/src/pages/admin/`.
 - **Student Team:** Implement all student learning interfaces inside `frontend/src/pages/student/`.
