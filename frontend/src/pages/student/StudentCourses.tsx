@@ -21,7 +21,9 @@ import {
   Info,
   HelpCircle,
   ArrowLeft,
-  Compass
+  Compass,
+  RotateCcw,
+  Trophy
 } from 'lucide-react';
 
 // استيراد الشعار المعتمد
@@ -53,6 +55,7 @@ interface Course {
   icon: any;
   color: string;
   tag: string;
+  imageUrl: string;
   mainConcepts: string[];
   conceptTree: ConceptNode[];
 }
@@ -73,12 +76,11 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
   const [activeModalCourse, setActiveModalCourse] = useState<Course | null>(null);
   const [selectedNode, setSelectedNode] = useState<ConceptNode | null>(null);
   const [courseToStart, setCourseToStart] = useState<Course | null>(null);
+  const [courseToImprove, setCourseToImprove] = useState<Course | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // قراءة مستوى الطالب المكتسب من الاختبار
   const currentStudentLevel = studentLevel || (typeof window !== 'undefined' ? (localStorage.getItem('edutech_student_level') as 'مبتدئ' | 'متوسط' | 'متقدم' | null) : null);
 
-  // قراءة ومراقبة مظهر المنصة
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('edutech_theme');
     return saved ? saved === 'dark' : true;
@@ -165,7 +167,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
     { id: 'algorithms', label: 'خوارزميات وهياكل بيانات' },
   ];
 
-  // هيكل الشجرة المعرفية العميقة لجميع المقررات
   const courses: Course[] = [
     {
       id: 'python-core',
@@ -175,10 +176,11 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       level: 'مبتدئ',
       duration: '32 ساعة',
       lessonsCount: 48,
-      progress: 65,
+      progress: 100, // مكتمل وناجح مثلاً بنسبة 90%
       icon: Code2,
       color: '#FFCB74',
       tag: 'مقرر مخصص لكِ',
+      imageUrl: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=800&q=80',
       mainConcepts: ['المتغيرات والذاكرة', 'التحكم بالتدفق', 'الهياكل الخطية', 'القواميس والخرائط', 'الدوال والمودل', 'معالجة الاستثناءات'],
       conceptTree: [
         {
@@ -265,6 +267,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       icon: BrainCircuit,
       color: '#E5B158',
       tag: 'شائع الآن',
+      imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80',
       mainConcepts: ['معمارية Transformers', 'صياغة الأوامر التأسيسية', 'التفكير الاستدلالي CoT', 'التضمين الشعاعي Embeddings', 'أنظمة RAG المسترجعة', 'تفادي الهلوسة والأمان'],
       conceptTree: [
         {
@@ -347,6 +350,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       icon: Sparkles,
       color: '#FFD79A',
       tag: 'جديد',
+      imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80',
       mainConcepts: ['مكونات JSX', 'الحالة التفاعلية useState', 'الآثار الجانبية useEffect', 'النماذج والأحداث', 'إدارة الحالة Context API', 'استدعاء الخوادم APIs'],
       conceptTree: [
         {
@@ -429,6 +433,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       icon: Database,
       color: '#B8822B',
       tag: 'مسار معتمد',
+      imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
       mainConcepts: ['تحليل التعقيد Big-O', 'المصفوفات والقوائم المترابطة', 'المكدسات والطوابير', 'الفرز والبحث الثنائي', 'الأشجار الهرمية BST', 'الرسوم البيانية والمسارات'],
       conceptTree: [
         {
@@ -511,6 +516,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       icon: Layers,
       color: '#FFCB74',
       tag: 'أساسيات هندسية',
+      imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
       mainConcepts: ['الفئات والكائنات', 'التغليف وحماية البيانات', 'الوراثة والتوسع', 'تعدد الأشكال Polymorphism', 'التجريد والواجهات', 'مبادئ SOLID المعمارية'],
       conceptTree: [
         {
@@ -590,7 +596,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
     return matchesCategory && matchesSearch;
   });
 
-  // حساب موضع انطلاق الطالب بناءً على اختباره
   const getStartingConceptIndex = (level: 'مبتدئ' | 'متوسط' | 'متقدم' | null): number | null => {
     if (!level) return null;
     if (level === 'متقدم') return 4;
@@ -598,7 +603,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
     return 0;
   };
 
-  // تعيين العقدة المحددة افتراضياً عند فتح المودال
   useEffect(() => {
     if (activeModalCourse) {
       const startIndex = getStartingConceptIndex(currentStudentLevel);
@@ -664,104 +668,150 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
           </div>
         </div>
 
-        {/* شبكة كروت المقررات */}
+        {/* شبكة كروت المقررات بأبعاد مدمجة وطبيعية */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredCourses.map((course) => {
             const Icon = course.icon;
             const hasStarted = course.progress > 0;
+            const isCompleted = course.progress >= 100;
 
             return (
               <div
                 key={course.id}
-                className="bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/15 dark:border-[#2F2F2F] hover:border-[#FFCB74] dark:hover:border-[#FFCB74] rounded-2xl p-4 sm:p-5 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden shadow-xs hover:shadow-lg hover:-translate-y-0.5"
+                className="bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/15 dark:border-[#2F2F2F] hover:border-[#FFCB74] dark:hover:border-[#FFCB74] rounded-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden shadow-xs hover:shadow-lg hover:-translate-y-0.5"
               >
-                <div>
-                  <div className="flex items-start justify-between mb-3.5">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#FFCB74]/15 border border-[#FFCB74]/40 text-[#FFCB74] shadow-xs group-hover:scale-105 transition-transform">
-                      <Icon className="w-5 h-5" />
+                {/* 1. البانر الصوري الرشيق والمدمج */}
+                <div className="relative w-full h-20 overflow-hidden shrink-0">
+                  <img 
+                    src={course.imageUrl} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 opacity-90 dark:opacity-75"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-[#2F2F2F] dark:via-[#2F2F2F]/60 dark:to-transparent" />
+
+                  {/* وسام المقرر والأيقونة */}
+                  <div className="absolute top-2 inset-x-2.5 flex items-center justify-between">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/90 dark:bg-[#111111]/85 backdrop-blur-md border border-[#FFCB74]/40 text-[#FFCB74] shadow-xs">
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                    
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#FFCB74]/15 border border-[#FFCB74]/30 text-[#111111] dark:text-[#FFCB74]">
+
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-white/90 dark:bg-[#111111]/85 backdrop-blur-md border border-[#FFCB74]/40 text-[#111111] dark:text-[#FFCB74]">
                       {course.tag}
                     </span>
                   </div>
-
-                  <h3 className="text-base font-black mb-1.5 transition-colors text-[#111111] dark:text-[#FFFFFF] group-hover:text-[#FFCB74] line-clamp-1">
-                    {course.title}
-                  </h3>
-                  <p className="text-[11px] leading-relaxed mb-3 text-gray-600 dark:text-gray-400 font-medium line-clamp-2">
-                    {course.description}
-                  </p>
-
-                  <div className="mb-4">
-                    <span className="text-[10px] font-bold block mb-1.5 text-[#FFCB74]">
-                      المفاهيم المغطاة:
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {course.mainConcepts.slice(0, 3).map((concept, idx) => (
-                        <span 
-                          key={idx}
-                          className="text-[10px] px-2 py-0.5 rounded-md border font-medium bg-[#F6F6F6] dark:bg-[#111111]/50 border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-gray-700 dark:text-gray-300"
-                        >
-                          {concept}
-                        </span>
-                      ))}
-                      {course.mainConcepts.length > 3 && (
-                        <span className="text-[9px] px-1.5 py-0.5 text-gray-400 font-bold self-center">
-                          +{course.mainConcepts.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between text-[11px] mb-3 border-y py-2 border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-[#FFCB74]" />
-                      <span>{course.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="w-3 h-3 text-[#FFCB74]" />
-                      <span>{course.lessonsCount} درساً</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Award className="w-3 h-3 text-[#FFCB74]" />
-                      <span>{course.level}</span>
+                {/* 2. محتوى الكرت المدمج */}
+                <div className="p-3.5 pt-0.5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm sm:text-base font-black mb-1 transition-colors text-[#111111] dark:text-[#FFFFFF] group-hover:text-[#FFCB74] line-clamp-1">
+                      {course.title}
+                    </h3>
+                    <p className="text-[10px] leading-relaxed mb-2 text-gray-600 dark:text-gray-400 font-medium line-clamp-2">
+                      {course.description}
+                    </p>
+
+                    <div className="mb-2.5">
+                      <span className="text-[9px] font-bold block mb-1 text-[#FFCB74]">
+                        المفاهيم المغطاة:
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {course.mainConcepts.slice(0, 3).map((concept, idx) => (
+                          <span 
+                            key={idx}
+                            className="text-[9px] px-1.5 py-0.5 rounded border font-medium bg-[#F6F6F6] dark:bg-[#111111]/50 border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-gray-700 dark:text-gray-300"
+                          >
+                            {concept}
+                          </span>
+                        ))}
+                        {course.mainConcepts.length > 3 && (
+                          <span className="text-[9px] px-1 text-gray-400 font-bold self-center">
+                            +{course.mainConcepts.length - 3}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {hasStarted ? (
-                    <div className="mb-3">
-                      <div className="flex justify-between items-center text-[10px] mb-1">
-                        <span className="text-gray-500 dark:text-gray-400 font-bold">الإنجاز</span>
-                        <span className="font-extrabold text-[#FFCB74]">{course.progress}%</span>
+                  <div>
+                    {/* شريط الإحصائيات */}
+                    <div className="flex items-center justify-between text-[10px] mb-2 border-y py-1 border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-[#FFCB74]" />
+                        <span>{course.duration}</span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-[#111111]">
-                        <div 
-                          className="h-full bg-[#FFCB74] rounded-full transition-all duration-500"
-                          style={{ width: `${course.progress}%` }}
-                        />
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="w-3 h-3 text-[#FFCB74]" />
+                        <span>{course.lessonsCount} درساً</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Award className="w-3 h-3 text-[#FFCB74]" />
+                        <span>{course.level}</span>
                       </div>
                     </div>
-                  ) : null}
 
-                  <div className="grid grid-cols-12 gap-2">
-                    <button
-                      onClick={() => setCourseToStart(course)}
-                      className="col-span-6 py-2 px-3 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-[1.02] active:scale-95"
-                    >
-                      <Play className="w-3 h-3 fill-current" />
-                      <span>{hasStarted ? 'متابعة' : 'بدء المقرر'}</span>
-                    </button>
+                    {/* شريط الإنجاز وإبراز درجة النجاح إذا اكتمل المقرر */}
+                    {hasStarted ? (
+                      <div className="mb-2">
+                        <div className="flex justify-between items-center text-[9px] mb-0.5">
+                          <span className="text-gray-500 dark:text-gray-400 font-bold">
+                            {isCompleted ? 'درجة الإتقان الحالية' : 'الإنجاز'}
+                          </span>
+                          <span className="font-extrabold text-[#FFCB74]">
+                            {isCompleted ? '90% (ناجح ومُعتمد)' : `${course.progress}%`}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-[#111111]">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-[#FFCB74]'}`}
+                            style={{ width: `${course.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
 
-                    <button
-                      onClick={() => setActiveModalCourse(course)}
-                      className="col-span-6 py-2 px-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 bg-[#F6F6F6] dark:bg-[#111111]/40 text-[#111111] dark:text-[#FFCB74] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-[#FFCB74]"
-                    >
-                      <Network className="w-3 h-3 text-[#FFCB74]" />
-                      <span>شجرة المفاهيم</span>
-                    </button>
+                    {/* أزرار الإجراءات مع دعم ميزة تحسين الدرجة لـ 100% */}
+                    <div className="grid grid-cols-12 gap-1.5">
+                      {isCompleted ? (
+                        <>
+                          <button
+                            onClick={() => setCourseToImprove(course)}
+                            className="col-span-7 py-1.5 px-2 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-[1.02] active:scale-95"
+                            title="إعادة الأنشطة لرفع درجتك إلى 100%"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>تحسين الدرجة لـ 100%</span>
+                          </button>
+
+                          <button
+                            onClick={() => setActiveModalCourse(course)}
+                            className="col-span-5 py-1.5 px-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 bg-[#F6F6F6] dark:bg-[#111111]/40 text-[#111111] dark:text-[#FFCB74] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-[#FFCB74]"
+                          >
+                            <Network className="w-3 h-3 text-[#FFCB74]" />
+                            <span>شجرة المفاهيم</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setCourseToStart(course)}
+                            className="col-span-6 py-1.5 px-2 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-[1.02] active:scale-95"
+                          >
+                            <Play className="w-3 h-3 fill-current" />
+                            <span>{hasStarted ? 'متابعة' : 'بدء المقرر'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => setActiveModalCourse(course)}
+                            className="col-span-6 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 bg-[#F6F6F6] dark:bg-[#111111]/40 text-[#111111] dark:text-[#FFCB74] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-[#FFCB74]"
+                          >
+                            <Network className="w-3 h-3 text-[#FFCB74]" />
+                            <span>شجرة المفاهيم</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -772,7 +822,55 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
 
       </main>
 
-      {/* ================= نافذة تحديد طريقة البدء (اختبار تشخيصي أو من الصفر) ================= */}
+      {/* ================= نافذة تحسين الدرجة إلى 100% للمقررات المكتملة ================= */}
+      {courseToImprove && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn" dir="rtl">
+          <div className="bg-white dark:bg-[#1e1e1e] border border-[#FFCB74]/40 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl relative text-center">
+            
+            <button
+              onClick={() => setCourseToImprove(null)}
+              className="absolute top-4 left-4 w-7 h-7 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-[#2c2c2c] hover:bg-gray-200 text-gray-500 dark:text-gray-300 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-[#FFCB74]/20 border border-[#FFCB74]/40 flex items-center justify-center text-[#FFCB74] mx-auto mb-3">
+              <Trophy className="w-6 h-6" />
+            </div>
+
+            <h3 className="text-base sm:text-lg font-black text-[#111111] dark:text-white mb-1.5">
+              تحسين درجة الإتقان: <span className="text-[#FFCB74]">{courseToImprove.title}</span>
+            </h3>
+
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">
+              لقد اجتزتِ هذا المقرر بنجاح محققة درجة <strong>90%</strong>. يمكنك الآن إعادة دراسة المفاهيم وخوض التقييم مجدداً لتحقيق الدرجة الكاملة <strong>100%</strong> وتحديث وثيقة إتقانك دون أن تفقدي نتيجتك الحالية.
+            </p>
+
+            <div className="flex items-center justify-center gap-2.5">
+              <button
+                onClick={() => {
+                  const id = courseToImprove.id;
+                  setCourseToImprove(null);
+                  if (onSelectCourse) onSelectCourse(id, 'direct_lesson');
+                }}
+                className="py-2.5 px-6 rounded-xl font-black text-xs bg-[#FFCB74] text-[#111111] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>بدء تحسين الدرجة إلى 100%</span>
+              </button>
+
+              <button
+                onClick={() => setCourseToImprove(null)}
+                className="py-2.5 px-4 rounded-xl font-bold text-xs border border-white/20 hover:border-[#FFCB74] text-gray-500 dark:text-gray-300 transition-all cursor-pointer"
+              >
+                إلغاء والاحتفاظ بدرجتي
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= نافذة تحديد طريقة البدء ================= */}
       {courseToStart && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn" dir="rtl">
           <div className="bg-white dark:bg-[#1e1e1e] border border-[#FFCB74]/40 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative text-center">
@@ -797,7 +895,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
             </p>
 
             <div className="grid grid-cols-1 gap-3.5 mb-5 text-right">
-              {/* الخيار الأول: البدء من الصفر */}
               <button
                 onClick={() => {
                   const id = courseToStart.id;
@@ -820,7 +917,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#FFCB74] group-hover:-translate-x-1 transition-transform shrink-0 mt-2" />
               </button>
 
-              {/* الخيار الثاني: اختبار تحديد المستوى */}
               <button
                 onClick={() => {
                   const id = courseToStart.id;
@@ -854,14 +950,13 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
         </div>
       )}
 
-      {/* ================= النافذة المنبثقة الاحترافية لشجرة المفاهيم التفاعلية ================= */}
+      {/* ================= النافذة المنبثقة لشجرة المفاهيم التفاعلية ================= */}
       {activeModalCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn">
           <div 
             className="border rounded-3xl w-full max-w-6xl h-[88vh] flex flex-col overflow-hidden transition-all duration-300 bg-white dark:bg-[#1a1a1a] border-[#2F2F2F]/20 dark:border-[#2F2F2F] shadow-2xl"
             dir="rtl"
           >
-            {/* رأس النافذة */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0">
               <div className="flex items-center gap-3">
                 <PlatformLogo size={36} />
@@ -886,24 +981,16 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
               </button>
             </div>
 
-            {/* مساحة العمل المقسمة (يمين: شجرة المسار الرشيقة | يسار: بطاقة تفاصيل المحطة) */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-              
-              {/* قسم الشجرة الشامل (رسم هرمي انسيابي خفيف ومترابط) */}
               <div className="flex-1 p-6 overflow-y-auto overflow-x-auto flex flex-col items-center justify-start bg-slate-50/50 dark:bg-[#141414]/50 border-b lg:border-b-0 lg:border-l border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
-                
-                {/* العقدة الجذرية الرئيسية (Root Pill) */}
                 <div className="px-6 py-2.5 rounded-full bg-[#FFCB74] text-[#111111] font-black text-xs shadow-md flex items-center gap-2 border-2 border-white dark:border-[#111111] shrink-0">
                   <Sparkles className="w-4 h-4" />
                   <span>{activeModalCourse.title}</span>
                 </div>
 
-                {/* الجذع الرئيسي */}
                 <div className="w-[2px] h-6 bg-[#FFCB74]/70" />
 
-                {/* شبكة عقد المسار المرنة والمدمجة (بدون كروت عملاقة) */}
                 <div className="w-full max-w-2xl flex flex-col items-center">
-                  
                   {activeModalCourse.conceptTree.map((node, index) => {
                     const startIndex = getStartingConceptIndex(currentStudentLevel);
                     const hasTested = startIndex !== null;
@@ -914,15 +1001,12 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
 
                     return (
                       <div key={node.id} className="w-full flex flex-col items-center">
-                        
-                        {/* خط الربط بين العقد */}
                         {index > 0 && (
                           <div className={`w-[2px] h-6 transition-colors ${
                             isMastered ? 'bg-emerald-500' : isCurrent ? 'bg-[#FFCB74]' : 'bg-[#2F2F2F]/30 dark:bg-[#2F2F2F]'
                           }`} />
                         )}
 
-                        {/* كبسولة المحطة الرشيقة (Compact Node Bar) */}
                         <div
                           onClick={() => setSelectedNode(node)}
                           className={`w-full max-w-lg p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
@@ -940,7 +1024,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            {/* رقم العقدة / رمز الإنجاز */}
                             <div className={`w-8 h-8 rounded-xl text-xs font-black flex items-center justify-center shrink-0 shadow-xs ${
                               isCurrent
                                 ? 'bg-[#FFCB74] text-[#111111]'
@@ -966,7 +1049,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                             </div>
                           </div>
 
-                          {/* حالة العقدة الجانبية */}
                           <div className="flex items-center gap-2">
                             {isCurrent && (
                               <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-[#FFCB74] text-[#111111] animate-pulse whitespace-nowrap shadow-xs">
@@ -982,15 +1064,12 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                             <ChevronLeft className="w-4 h-4 text-gray-400" />
                           </div>
                         </div>
-
                       </div>
                     );
                   })}
                 </div>
-
               </div>
 
-              {/* لوحة التفاصيل الجانبية الفورية (Detail Drawer) */}
               <div className="w-full lg:w-96 p-5 sm:p-6 overflow-y-auto bg-white dark:bg-[#1a1a1a] flex flex-col justify-between shrink-0">
                 {selectedNode ? (
                   <div>
@@ -1011,7 +1090,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                       {selectedNode.summary}
                     </p>
 
-                    {/* التفرعات والمواضيع الفرعية الملموسة */}
                     <div>
                       <span className="text-xs font-black text-[#FFCB74] block mb-2.5 flex items-center gap-1.5">
                         <GitBranch className="w-3.5 h-3.5" />
@@ -1051,7 +1129,6 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                   </div>
                 )}
 
-                {/* الإجراء السريع في أسفل اللوحة */}
                 <div className="pt-4 mt-6 border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
                   <button
                     onClick={() => {
@@ -1066,10 +1143,8 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                   </button>
                 </div>
               </div>
-
             </div>
 
-            {/* شريط الإيضاح السفلي */}
             <div className="px-6 py-2.5 border-t flex items-center justify-between border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0 text-xs text-gray-500 dark:text-gray-400 font-medium">
               <span>الهيكل المعرفي الكامل يوضح تسلسل المحطات وفق نمط بلوم المعرفي للتعلم التكيفي.</span>
               <span className="text-[#FFCB74] font-bold">منصة إديوتك الذكية • EduTech 2026</span>

@@ -7,13 +7,18 @@ import {
   Trophy, 
   Code2, 
   Zap, 
-  Timer,
-  BookOpen,
-  HelpCircle,
-  Network,
-  Lock,
-  GitBranch,
-  Target
+  BookOpen, 
+  Lock, 
+  GitBranch, 
+  ChevronLeft, 
+  Info, 
+  RotateCcw,
+  Menu,
+  X,
+  Home,
+  TrendingUp,
+  User,
+  Settings
 } from 'lucide-react';
 
 // استيراد مكون اللوجو المعتمد
@@ -30,11 +35,18 @@ interface Question {
   explanation: string;
 }
 
+interface SubTopic {
+  id: string;
+  name: string;
+  difficulty: 'سهل' | 'متوسط' | 'متقدم';
+}
+
 interface ConceptNode {
+  id: number;
   title: string;
-  description: string;
-  requiredLevel: 'مبتدئ' | 'متوسط' | 'متقدم';
-  subConcepts: string[];
+  summary: string;
+  categoryLevel: 'تأسيسي' | 'بنائي' | 'متقدم';
+  subTopics: SubTopic[];
 }
 
 interface PlacementTestProps {
@@ -53,6 +65,8 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
   const [score, setScore] = useState(0);
   const [xp, setXp] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [selectedResultNode, setSelectedResultNode] = useState<ConceptNode | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // قراءة ومراقبة مظهر المنصة العام (Dark / Light)
@@ -78,6 +92,16 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
       observer.disconnect();
     };
   }, []);
+
+  // عناصر القائمة الجانبية الموحدة
+  const menuItems = [
+    { id: 'home', label: 'الرئيسية', icon: Home, action: onCancel },
+    { id: 'courses', label: 'المقررات الدراسية', icon: BookOpen, action: onCancel },
+    { id: 'achievements', label: 'إنجازاتي', icon: Trophy, action: onCancel },
+    { id: 'progress', label: 'تقدمي الدراسي', icon: TrendingUp, action: onCancel },
+    { id: 'profile', label: 'الملف الشخصي', icon: User, action: onCancel },
+    { id: 'settings', label: 'الإعدادات', icon: Settings, action: onCancel },
+  ];
 
   // أنيميشن النقاط المضيئة بالخلفية
   useEffect(() => {
@@ -258,39 +282,253 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
     }
   ];
 
-  // شجرة مفاهيم المقرر لتحديد موضع الطالب بدقة
-  const courseConceptTree: ConceptNode[] = [
-    {
-      title: 'الأساسيات اللغوية والبيانات',
-      description: 'فهم الذاكرة وطرق تخزين القيم والعمليات الحسابية والمنطقية.',
-      requiredLevel: 'مبتدئ',
-      subConcepts: ['Variables & Types', 'Type Casting', 'Operators']
-    },
-    {
-      title: 'التحكم بالتدفق وسير البرنامج',
-      description: 'اتخاذ القرارات التكرارية والشرطية داخل البرنامج.',
-      requiredLevel: 'مبتدئ',
-      subConcepts: ['If-Else Conditions', 'For / While Loops', 'Loop Control']
-    },
-    {
-      title: 'الهياكل البيانية المدمجة',
-      description: 'إدارة وتجميع البيانات بمرونة وكفاءة.',
-      requiredLevel: 'متوسط',
-      subConcepts: ['Lists & Tuples', 'Dictionaries & Sets', 'Comprehensions']
-    },
-    {
-      title: 'الدوال وهيكلة الأكواد',
-      description: 'بناء توابع برمجية قابلة لإعادة الاستخدام واستدعاء المكتبات.',
-      requiredLevel: 'متقدم',
-      subConcepts: ['Functions Def', 'Return Values', 'Modules & Imports']
+  // شجرة مفاهيم متكيفة ديناميكياً بحسب المقرر المختار
+  const getCourseConceptTree = (): ConceptNode[] => {
+    if (courseTitle.includes('الذكاء الاصطناعي') || courseTitle.toLowerCase().includes('ai')) {
+      return [
+        {
+          id: 1,
+          title: 'بنية نماذج اللغات الضخمة LLM',
+          summary: 'فهم التوكينز (Tokens) وسياق الانتباه ومعاملات التوليد.',
+          categoryLevel: 'تأسيسي',
+          subTopics: [
+            { id: 'ai1_1', name: 'تقطيع النصوص (Tokenization & Vocab)', difficulty: 'سهل' },
+            { id: 'ai1_2', name: 'معاملات التحكم (Temperature, Top-P)', difficulty: 'متوسط' },
+            { id: 'ai1_3', name: 'النوافذ السياقية وحجم الذاكرة (Context Window)', difficulty: 'متوسط' }
+          ]
+        },
+        {
+          id: 2,
+          title: 'هندسة الأوامر الأساسية',
+          summary: 'التحكم بالاستجابة وصياغة أدوار النظام وقوالب التوجيه.',
+          categoryLevel: 'تأسيسي',
+          subTopics: [
+            { id: 'ai2_1', name: 'تقنيات Zero-Shot و Few-Shot', difficulty: 'سهل' },
+            { id: 'ai2_2', name: 'تعليمات النظام وتحديد الأدوار (System Role)', difficulty: 'سهل' },
+            { id: 'ai2_3', name: 'التوليد بصيغ مهيكلة (JSON Outputs)', difficulty: 'متوسط' }
+          ]
+        },
+        {
+          id: 3,
+          title: 'التفكير المتسلسل واستدعاء الدوال',
+          summary: 'توجيه النموذج للتفكير خطوة بخطوة وربطه بالأدوات الخارجية.',
+          categoryLevel: 'بنائي',
+          subTopics: [
+            { id: 'ai3_1', name: 'سلسلة التفكير (Chain of Thought - CoT)', difficulty: 'متوسط' },
+            { id: 'ai3_2', name: 'إطار عمل التفكير والتنفيذ (ReAct Framework)', difficulty: 'متقدم' },
+            { id: 'ai3_3', name: 'استدعاء الدوال البرمجية (Function Calling)', difficulty: 'متقدم' }
+          ]
+        },
+        {
+          id: 4,
+          title: 'التضمينات والبحث الدلالي',
+          summary: 'تمثيل المعرفة بالنواقل الرقمية للبحث المتشابه في المعنى.',
+          categoryLevel: 'بنائي',
+          subTopics: [
+            { id: 'ai4_1', name: 'المتجهات الدلالية (Vector Embeddings)', difficulty: 'متوسط' },
+            { id: 'ai4_2', name: 'قياس التشابه الزاوي (Cosine Similarity)', difficulty: 'متوسط' },
+            { id: 'ai4_3', name: 'قواعد البيانات الشعاعية (Vector Databases)', difficulty: 'متقدم' }
+          ]
+        },
+        {
+          id: 5,
+          title: 'معمارية التوليد المعزز بالاسترجاع RAG',
+          summary: 'ربط النماذج الذكية ببياناتك ومستنداتك الخاصة بدقة.',
+          categoryLevel: 'متقدم',
+          subTopics: [
+            { id: 'ai5_1', name: 'تقطيع وفهرسة الوثائق (Chunking Strategies)', difficulty: 'متوسط' },
+            { id: 'ai5_2', name: 'حقن السياق المسترجع (Context Injection)', difficulty: 'متقدم' },
+            { id: 'ai5_3', name: 'إعادة الترتيب والتقييم (Reranking & HyDE)', difficulty: 'متقدم' }
+          ]
+        },
+        {
+          id: 6,
+          title: 'حماية الأمان ومنع الهلوسة',
+          summary: 'تحصين التطبيقات ضد الاختراق وحقن الأوامر والتحقق من الحقائق.',
+          categoryLevel: 'متقدم',
+          subTopics: [
+            { id: 'ai6_1', name: 'كشف وضبط الهلوسة (Hallucination Guardrails)', difficulty: 'متوسط' },
+            { id: 'ai6_2', name: 'التصدي لاختراق الأوامر (Prompt Injection)', difficulty: 'متقدم' },
+            { id: 'ai6_3', name: 'تقييم جودة النماذج (RAG Triad & Benchmarking)', difficulty: 'متقدم' }
+          ]
+        }
+      ];
     }
-  ];
 
+    if (courseTitle.includes('OOP') || courseTitle.toLowerCase().includes('oop')) {
+      return [
+        {
+          id: 1,
+          title: 'الفئات والكائنات التأسيسية',
+          summary: 'صياغة المخططات البرمجية وتوليد الكائنات المستقلة.',
+          categoryLevel: 'تأسيسي',
+          subTopics: [
+            { id: 'o1_1', name: 'بناء الفئات وإنشاء الكائنات (Class & Object)', difficulty: 'سهل' },
+            { id: 'o1_2', name: 'دالة البناء وتمرير الذات (__init__ & self)', difficulty: 'سهل' },
+            { id: 'o1_3', name: 'متغيرات الكائن مقابل متغيرات الفئة', difficulty: 'متوسط' }
+          ]
+        },
+        {
+          id: 2,
+          title: 'التغليف وحماية الحالة الداخلية',
+          summary: 'منع التعديل المباشر وتقييد الوصول لسلامة البيانات.',
+          categoryLevel: 'تأسيسي',
+          subTopics: [
+            { id: 'o2_1', name: 'الخصائص الخاصة والعامة (Public vs Private)', difficulty: 'سهل' },
+            { id: 'o2_2', name: 'دوال القراءة والتعديل الموجهة (@property Get/Set)', difficulty: 'متوسط' },
+            { id: 'o2_3', name: 'حماية وتغليف المنطق التشغيلي', difficulty: 'متوسط' }
+          ]
+        },
+        {
+          id: 3,
+          title: 'الوراثة وإعادة استخدام الأكواد',
+          summary: 'اشتقاق فئات مخصصة من فئات أساسية لمنع التكرار.',
+          categoryLevel: 'بنائي',
+          subTopics: [
+            { id: 'o3_1', name: 'الوراثة الفردية وتمرير الخصائص', difficulty: 'سهل' },
+            { id: 'o3_2', name: 'استدعاء دالة الأصل عبر super()', difficulty: 'متوسط' },
+            { id: 'o3_3', name: 'إعادة تعريف التوابع (Method Overriding)', difficulty: 'متوسط' }
+          ]
+        },
+        {
+          id: 4,
+          title: 'تعدد الأشكال وسلوكيات الواجهات',
+          summary: 'تنفيذ سلوكيات متباينة عبر واجهة برمجية موحدة.',
+          categoryLevel: 'بنائي',
+          subTopics: [
+            { id: 'o4_1', name: 'مبدأ Duck Typing في بايثون', difficulty: 'متوسط' },
+            { id: 'o4_2', name: 'الدوال السحرية وتحميل المشغلات (Dunder Methods)', difficulty: 'متقدم' },
+            { id: 'o4_3', name: 'التفاعل الموحد مع كائنات متنوعة', difficulty: 'متقدم' }
+          ]
+        },
+        {
+          id: 5,
+          title: 'التجريد وبناء العقود البرمجية',
+          summary: 'إلزام الفئات المشتقة بهيكل محدد دون الخوض في تفاصيلها.',
+          categoryLevel: 'متقدم',
+          subTopics: [
+            { id: 'o5_1', name: 'الفئات المجردة عبر مكتبة abc', difficulty: 'متوسط' },
+            { id: 'o5_2', name: 'المحددات المجردة (@abstractmethod)', difficulty: 'متقدم' },
+            { id: 'o5_3', name: 'فصل الواجهة عن التنفيذ الميداني', difficulty: 'متقدم' }
+          ]
+        },
+        {
+          id: 6,
+          title: 'مبادئ التصميم النظيف SOLID',
+          summary: 'معايير هندسة البرمجيات لبناء نظم مرنة وقابلة للتوسع والصيانة.',
+          categoryLevel: 'متقدم',
+          subTopics: [
+            { id: 'o6_1', name: 'المسؤولية الواحدة والفتح/الإغلاق (SRP & OCP)', difficulty: 'متقدم' },
+            { id: 'o6_2', name: 'مبدأ استبدال لسكوف وفصل الواجهات (LSP & ISP)', difficulty: 'متقدم' },
+            { id: 'o6_3', name: 'عكس الاعتماديات واستقلالية الوحدات (DIP)', difficulty: 'متقدم' }
+          ]
+        }
+      ];
+    }
+
+    return [
+      {
+        id: 1,
+        title: 'الذاكرة والمتغيرات الديناميكية',
+        summary: 'فهم حجز الذاكرة Heap & Stack وعناوين المراجع وتعدد الأنواع.',
+        categoryLevel: 'تأسيسي',
+        subTopics: [
+          { id: 'p1_1', name: 'إسناد المتغيرات والمراجع (References)', difficulty: 'سهل' },
+          { id: 'p1_2', name: 'الأنواع التأسيسية (int, float, str, bool)', difficulty: 'سهل' },
+          { id: 'p1_3', name: 'التحويل بين الأنواع (Type Casting)', difficulty: 'متوسط' },
+          { id: 'p1_4', name: 'العمليات الحسابية والمنطقية المدمجة', difficulty: 'سهل' }
+        ]
+      },
+      {
+        id: 2,
+        title: 'منطق التحكم وتدفق التنفيذ',
+        summary: 'بناء المنطق الشرطي والتكرار التراكمي وإدارة مسار التنفيذ.',
+        categoryLevel: 'تأسيسي',
+        subTopics: [
+          { id: 'p2_1', name: 'الشروط المركبة (If-Elif-Else)', difficulty: 'سهل' },
+          { id: 'p2_2', name: 'تكرار النطاق مع حلقات For Loop', difficulty: 'متوسط' },
+          { id: 'p2_3', name: 'الحلقات المفتوحة وحالات While Loops', difficulty: 'متوسط' },
+          { id: 'p2_4', name: 'أوامر التحكم (Break, Continue, Pass)', difficulty: 'سهل' }
+        ]
+      },
+      {
+        id: 3,
+        title: 'هياكل البيانات المتسلسلة',
+        summary: 'إدارة المجموعات المرتبة، والتقطيع والفهرسة والتعديل المباشر.',
+        categoryLevel: 'بنائي',
+        subTopics: [
+          { id: 'p3_1', name: 'القوائم الديناميكية وعملياتها (Lists)', difficulty: 'متوسط' },
+          { id: 'p3_2', name: 'الصفوف غير القابلة للتعديل (Tuples)', difficulty: 'سهل' },
+          { id: 'p3_3', name: 'تقطيع وفهرسة السلاسل (Slicing)', difficulty: 'متوسط' },
+          { id: 'p3_4', name: 'توليد القوائم المضغوط (Comprehensions)', difficulty: 'متقدم' }
+        ]
+      },
+      {
+        id: 4,
+        title: 'القواميس والجداول الترابطية',
+        summary: 'تنظيم البيانات بواسطة جداول الهاش (Hash Maps) والمجموعات الفريدة.',
+        categoryLevel: 'بنائي',
+        subTopics: [
+          { id: 'p4_1', name: 'القواميس المعتمدة على المفاتيح (Key-Value)', difficulty: 'متوسط' },
+          { id: 'p4_2', name: 'القواميس المتداخلة واستخراج البيانات', difficulty: 'متقدم' },
+          { id: 'p4_3', name: 'المجموعات الفريدة والعمليات الجبرية (Sets)', difficulty: 'متوسط' }
+        ]
+      },
+      {
+        id: 5,
+        title: 'الدوال والبرمجة التركيبية',
+        summary: 'هندسة الأكواد القابلة لإعادة الاستخدام وإدارة نطاق المتغيرات.',
+        categoryLevel: 'متقدم',
+        subTopics: [
+          { id: 'p5_1', name: 'تعريف الدوال وتمرير المعاملات (Def & Args)', difficulty: 'متوسط' },
+          { id: 'p5_2', name: 'المعاملات الديناميكية (*args & **kwargs)', difficulty: 'متقدم' },
+          { id: 'p5_3', name: 'نطاق المتغيرات وقواعد Scope (LEGB)', difficulty: 'متقدم' },
+          { id: 'p5_4', name: 'الدوال المجهولة والمصغرة (Lambda)', difficulty: 'متقدم' }
+        ]
+      },
+      {
+        id: 6,
+        title: 'إدارة الملفات وحماية الأخطاء',
+        summary: 'معالجة الاستثناءات وقت التشغيل والتعامل مع الملفات الخارجية.',
+        categoryLevel: 'متقدم',
+        subTopics: [
+          { id: 'p6_1', name: 'اصطياد الأخطاء (Try-Except-Finally)', difficulty: 'متوسط' },
+          { id: 'p6_2', name: 'القراءة والكتابة في الملفات (File I/O)', difficulty: 'متوسط' },
+          { id: 'p6_3', name: 'بناء واستيراد الحزم والمكتبات (Modules)', difficulty: 'متقدم' }
+        ]
+      }
+    ];
+  };
+
+  const activeConceptTree = getCourseConceptTree();
   const currentQuestion = questions[currentQuestionIndex];
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   const handleSelectOption = (index: number) => {
     setSelectedOption(index);
+  };
+
+  const determineLevel = (finalScore: number): 'مبتدئ' | 'متوسط' | 'متقدم' => {
+    const percentage = (finalScore / questions.length) * 100;
+    if (percentage >= 80) return 'متقدم';
+    if (percentage >= 50) return 'متوسط';
+    return 'مبتدئ';
+  };
+
+  const getStartingConceptIndex = (level: 'مبتدئ' | 'متوسط' | 'متقدم'): number => {
+    if (level === 'متقدم') return 4;
+    if (level === 'متوسط') return 2;
+    return 0;
+  };
+
+  // دالة إعادة الاختبار بالكامل
+  const handleRetakeTest = () => {
+    setCurrentQuestionIndex(0);
+    setSelectedOption(null);
+    setScore(0);
+    setXp(0);
+    setShowResult(false);
+    setSelectedResultNode(null);
   };
 
   const handleNextQuestion = () => {
@@ -309,22 +547,11 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
     } else {
+      const calculatedLevel = determineLevel(newScore);
+      const startIdx = getStartingConceptIndex(calculatedLevel);
+      setSelectedResultNode(activeConceptTree[startIdx] || activeConceptTree[0]);
       setShowResult(true);
     }
-  };
-
-  const determineLevel = (finalScore: number): 'مبتدئ' | 'متوسط' | 'متقدم' => {
-    const percentage = (finalScore / questions.length) * 100;
-    if (percentage >= 80) return 'متقدم';
-    if (percentage >= 50) return 'متوسط';
-    return 'مبتدئ';
-  };
-
-  // تحديد المفهوم الذي سيبدأ منه الطالب في شجرة المفاهيم
-  const getStartingConceptIndex = (level: 'مبتدئ' | 'متوسط' | 'متقدم'): number => {
-    if (level === 'متقدم') return 3; // الدوال وهيكلة الأكواد
-    if (level === 'متوسط') return 2; // الهياكل البيانية
-    return 0; // الأساسيات اللغوية
   };
 
   return (
@@ -337,15 +564,82 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
       <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-[#FFCB74]/[0.06] rounded-full blur-[150px] pointer-events-none" />
       <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#FFCB74]/[0.04] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* الهيدر الثابت الموحد (Fixed Navbar) عبر المنصة مع اللوجو المعتمد */}
-      <header className="fixed top-0 inset-x-0 w-full flex items-center justify-between px-8 lg:px-14 py-4 border-b z-40 backdrop-blur-md transition-colors bg-white/95 dark:bg-[#111111]/85 border-[#2F2F2F]/20 dark:border-[#2F2F2F] shadow-sm">
+      {/* ستارة التعتيم عند فتح السايد بار */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 transition-opacity duration-300"
+        />
+      )}
+
+      {/* السايد بار الموحد لجميع الواجهات */}
+      <aside 
+        className={`fixed top-0 right-0 h-full w-72 border-l z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between py-6 px-5 shadow-2xl bg-white dark:bg-[#111111] border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-[#111111] dark:text-[#FFFFFF] ${
+          isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div>
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+            <div className="flex items-center gap-3">
+              <PlatformLogo size={42} />
+              <div>
+                <span className="text-base font-black text-[#111111] dark:text-[#FFCB74] tracking-wider block leading-tight">إديوتك</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">EDUTECH</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer bg-gray-100 dark:bg-[#2F2F2F] hover:bg-gray-200 dark:hover:bg-[#3F3F3F] text-gray-700 dark:text-gray-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <nav className="flex flex-col gap-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setIsSidebarOpen(false);
+                    item.action();
+                  }}
+                  className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer text-gray-600 dark:text-gray-400 hover:text-[#111111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2F2F2F]"
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="text-[11px] text-center border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F] pt-4 text-gray-500 dark:text-gray-400">
+          منصة إديوتك للتعلم التكيفي الذكي
+        </div>
+      </aside>
+
+      {/* الهيدر الثابت الموحد عبر المنصة مزود بزر السايدبار واللوجو */}
+      <header className="fixed top-0 inset-x-0 w-full flex items-center justify-between px-6 sm:px-10 py-3.5 border-b z-40 backdrop-blur-md transition-colors bg-white/95 dark:bg-[#111111]/85 border-[#2F2F2F]/20 dark:border-[#2F2F2F] shadow-sm">
         <div className="flex items-center gap-3">
-          <PlatformLogo size={38} />
-          <div className="text-right">
-            <h2 className="text-sm font-bold leading-tight text-[#111111] dark:text-white">
-              منصة إديوتك الذكية
-            </h2>
-            <p className="text-[11px] text-[#FFCB74] font-medium tracking-wide">EduTech</p>
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer bg-white dark:bg-[#2F2F2F] border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-[#FFCB74] text-[#111111] dark:text-[#FFCB74] shadow-xs"
+            title="فتح القائمة"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div onClick={onCancel} className="flex items-center gap-2.5 cursor-pointer">
+            <PlatformLogo size={36} />
+            <div className="text-right">
+              <h2 className="text-sm font-bold leading-tight text-[#111111] dark:text-white">
+                منصة إديوتك الذكية
+              </h2>
+              <p className="text-[10px] text-[#FFCB74] font-medium tracking-wide">EduTech</p>
+            </div>
           </div>
         </div>
 
@@ -355,7 +649,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
         </div>
       </header>
 
-      {/* محتوى الاختبار مع مسافة علوية pt-24 لتعويض الهيدر الثابت */}
+      {/* محتوى الاختبار مع مسافة علوية pt-24 */}
       <div className="pt-24 flex-1 flex flex-col justify-between">
         
         {/* شريط الإلغاء ونقاط الـ XP المدمج أعلى السؤال */}
@@ -392,13 +686,12 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
           </div>
         )}
 
-        {/* جسم الاختبار أو عرض النتيجة وإسقاط المستوى على شجرة المفاهيم */}
-        <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-6 z-10 flex flex-col justify-center">
+        {/* جسم الاختبار بحجم رشيق ومتناسق موحد */}
+        <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 z-10 flex flex-col justify-center">
           
           {!showResult ? (
             <div className="bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-xl transition-all">
               
-              {/* نوع السؤال والمفهوم المعرفي */}
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 rounded-full bg-[#FFCB74] text-[#111111]">
@@ -416,7 +709,6 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
                 </h3>
               </div>
 
-              {/* شاشة الكود (تظهر فقط إذا كان السؤال يحتوي على كود) */}
               {currentQuestion.code && (
                 <div className="mb-6 rounded-2xl overflow-hidden border border-[#2F2F2F] bg-[#111111] shadow-2xl" dir="ltr">
                   <div className="flex items-center justify-between px-4 py-2.5 bg-[#1a1a1a] border-b border-[#2F2F2F]">
@@ -450,7 +742,6 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
                 </div>
               )}
 
-              {/* خيارات الإجابة من متعدد */}
               <div className="grid grid-cols-1 gap-3.5 mb-8">
                 {currentQuestion.options.map((option, idx) => {
                   const isSelected = selectedOption === idx;
@@ -477,7 +768,6 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
                 })}
               </div>
 
-              {/* زر الانتقال للسؤال التالي */}
               <div className="flex justify-end">
                 <button
                   onClick={handleNextQuestion}
@@ -495,139 +785,241 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
 
             </div>
           ) : (
-            /* شاشة النتيجة وتحديد موضع الطالب في شجرة المفاهيم */
-            <div className="bg-white dark:bg-[#2F2F2F] border border-[#FFCB74]/50 rounded-3xl p-6 sm:p-9 backdrop-blur-md text-center shadow-2xl animate-fadeIn">
-              <div className="w-16 h-16 rounded-full bg-[#FFCB74] flex items-center justify-center text-[#111111] mx-auto mb-4 shadow-[0_0_30px_rgba(255,203,116,0.6)]">
-                <Trophy className="w-8 h-8" />
+            /* ================= شاشة النتيجة بأبعاد متناسقة وخيارات تنقل مرنة ================= */
+            <div className="bg-white dark:bg-[#1a1a1a] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-3xl p-5 sm:p-7 backdrop-blur-md shadow-2xl animate-fadeIn">
+              
+              <div className="text-center mb-5">
+                <div className="w-12 h-12 rounded-full bg-[#FFCB74] flex items-center justify-center text-[#111111] mx-auto mb-2.5 shadow-[0_0_20px_rgba(255,203,116,0.4)]">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg lg:text-xl font-black text-[#111111] dark:text-white mb-1">
+                  اكتمل الاختبار التشخيصي وتم تحديد موضعك المعرفي!
+                </h2>
+                <p className="text-[11px] text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                  تم إسقاط مستواك الحالي مباشرة على شجرة مفاهيم المقرر لتحديد نقطة انطلاقك التكيفية[cite: 16].
+                </p>
               </div>
 
-              <h2 className="text-xl lg:text-2xl font-black text-[#111111] dark:text-white mb-1.5">
-                اكتمل الاختبار التشخيصي وتم تحديد موضعك المعرفي!
-              </h2>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                حلل محرك التكيف نتائجك، وتم إسقاط مستواك الحالي مباشرة على شجرة مفاهيم المقرر لتحديد نقطة انطلاقك.
-              </p>
-
-              {/* بطاقة تقييم المستوى والـ XP */}
-              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
-                <div className="bg-[#F6F6F6] dark:bg-[#111111] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-2xl p-3">
-                  <span className="text-[11px] text-gray-500 dark:text-gray-400 block mb-0.5">الدرجة التشخيصية</span>
-                  <span className="text-lg font-extrabold text-[#111111] dark:text-white">{score} / {questions.length}</span>
+              {/* بطاقات المؤشرات الثلاثية المدمجة */}
+              <div className="grid grid-cols-3 gap-2.5 max-w-sm mx-auto mb-5 text-center">
+                <div className="bg-[#F6F6F6] dark:bg-[#141414] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-xl p-2.5">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">الدرجة</span>
+                  <span className="text-sm font-extrabold text-[#111111] dark:text-white">{score} / {questions.length}</span>
                 </div>
-                <div className="bg-[#F6F6F6] dark:bg-[#111111] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-2xl p-3">
-                  <span className="text-[11px] text-gray-500 dark:text-gray-400 block mb-0.5">نقاط الخبرة</span>
-                  <span className="text-lg font-extrabold text-[#FFCB74]">+{xp} XP</span>
+                <div className="bg-[#F6F6F6] dark:bg-[#141414] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-xl p-2.5">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">الخبرة</span>
+                  <span className="text-sm font-extrabold text-[#FFCB74]">+{xp} XP</span>
                 </div>
-                <div className="bg-[#FFCB74]/15 border border-[#FFCB74]/40 rounded-2xl p-3">
-                  <span className="text-[11px] text-[#FFCB74] font-bold block mb-0.5">المستوى المحدد</span>
-                  <span className="text-lg font-black text-[#111111] dark:text-white">{determineLevel(score)}</span>
+                <div className="bg-[#FFCB74]/15 border border-[#FFCB74]/40 rounded-xl p-2.5">
+                  <span className="text-[10px] text-[#FFCB74] font-bold block mb-0.5">المستوى</span>
+                  <span className="text-sm font-black text-[#111111] dark:text-white">{determineLevel(score)}</span>
                 </div>
               </div>
 
-              {/* شجرة المفاهيم التفاعلية بعد الاختبار مع تحديد موقع الطالب */}
-              <div className="bg-[#F6F6F6] dark:bg-[#111111] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-3xl p-5 mb-8 text-right shadow-inner">
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
-                  <div className="flex items-center gap-2">
-                    <GitBranch className="w-4 h-4 text-[#FFCB74]" />
+              {/* الشجرة الرشيقة بحجم محكم وموحد لجميع البطاقات */}
+              <div className="border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-2xl overflow-hidden mb-5 flex flex-col shadow-inner">
+                
+                <div className="flex items-center justify-between px-4 py-2 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414]">
+                  <div className="flex items-center gap-1.5">
+                    <GitBranch className="w-3.5 h-3.5 text-[#FFCB74]" />
                     <span className="text-xs font-black text-[#111111] dark:text-white">
-                      موقعك في شجرة مفاهيم المقرر (Learning Path Map)
+                      شجرة المفاهيم: <span className="text-[#FFCB74]">{courseTitle}</span>
                     </span>
                   </div>
-                  <span className="text-[11px] text-[#FFCB74] font-bold">
-                    تم تخصيص المسار لمستواك: {determineLevel(score)}
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74]">
+                    المسار المخصص: {determineLevel(score)}
                   </span>
                 </div>
 
-                {/* العقدة الجذرية */}
-                <div className="flex flex-col items-center mb-4">
-                  <div className="px-5 py-2 rounded-xl bg-[#FFCB74] text-[#111111] font-black text-xs shadow-xs flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{courseTitle}</span>
+                <div className="flex flex-col lg:flex-row h-[320px]">
+                  
+                  {/* شجرة المسار الرأسية - بطاقات موحدة الحجم تماماً */}
+                  <div className="flex-1 p-3.5 overflow-y-auto flex flex-col items-center justify-start bg-slate-50/50 dark:bg-[#141414]/50 border-b lg:border-b-0 lg:border-l border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+                    
+                    {/* العقدة الجذرية */}
+                    <div className="px-4 py-1.5 rounded-full bg-[#FFCB74] text-[#111111] font-black text-[11px] shadow-xs flex items-center gap-1 border border-white dark:border-[#111111] shrink-0">
+                      <Sparkles className="w-3 h-3" />
+                      <span>{courseTitle}</span>
+                    </div>
+
+                    <div className="w-[2px] h-3.5 bg-[#FFCB74]/70 shrink-0" />
+
+                    {/* عقد المسار موحدة الأبعاد بالكامل */}
+                    <div className="w-full max-w-sm flex flex-col items-center">
+                      {activeConceptTree.map((node, index) => {
+                        const calculatedLevel = determineLevel(score);
+                        const startIndex = getStartingConceptIndex(calculatedLevel);
+
+                        const isCurrent = index === startIndex;
+                        const isMastered = index < startIndex;
+                        const isLocked = index > startIndex;
+                        const isSelected = selectedResultNode?.id === node.id;
+
+                        return (
+                          <div key={node.id} className="w-full flex flex-col items-center">
+                            {index > 0 && (
+                              <div className={`w-[2px] h-3.5 shrink-0 transition-colors ${
+                                isMastered ? 'bg-emerald-500' : isCurrent ? 'bg-[#FFCB74]' : 'bg-[#2F2F2F]/30 dark:bg-[#2F2F2F]'
+                              }`} />
+                            )}
+
+                            {/* بطاقة محطة موحدة العرض والارتفاع */}
+                            <div
+                              onClick={() => setSelectedResultNode(node)}
+                              className={`w-full h-12 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between shrink-0 ${
+                                isSelected
+                                  ? 'ring-1.5 ring-[#FFCB74] scale-[1.01] shadow-md'
+                                  : 'hover:scale-[1.01]'
+                              } ${
+                                isCurrent
+                                  ? 'bg-[#FFCB74]/15 border-[#FFCB74] shadow-xs'
+                                  : isMastered
+                                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                                  : isLocked
+                                  ? 'bg-white/60 dark:bg-[#1a1a1a]/60 border-[#2F2F2F]/20 opacity-60'
+                                  : 'bg-white dark:bg-[#242424] border-[#2F2F2F]/20 hover:border-[#FFCB74]'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <div className={`w-6 h-6 rounded-lg text-[10px] font-black flex items-center justify-center shrink-0 ${
+                                  isCurrent
+                                    ? 'bg-[#FFCB74] text-[#111111]'
+                                    : isMastered
+                                    ? 'bg-emerald-500 text-white'
+                                    : 'bg-gray-100 dark:bg-[#333333] text-gray-600 dark:text-gray-300'
+                                }`}>
+                                  {isMastered ? <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" /> : index + 1}
+                                </div>
+
+                                <div className="text-right truncate">
+                                  <div className="flex items-center gap-1.5 truncate">
+                                    <h4 className="text-xs font-black text-[#111111] dark:text-white truncate">
+                                      {node.title}
+                                    </h4>
+                                    <span className="text-[8px] px-1 py-0.2 rounded font-bold bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74] shrink-0">
+                                      {node.categoryLevel}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0 mr-1">
+                                {isCurrent && (
+                                  <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-[#FFCB74] text-[#111111] whitespace-nowrap shadow-xs">
+                                    📍 انطلاقك
+                                  </span>
+                                )}
+                                {isMastered && (
+                                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 whitespace-nowrap">
+                                    مُتقن
+                                  </span>
+                                )}
+                                {isLocked && <Lock className="w-3 h-3 text-gray-400" />}
+                                <ChevronLeft className="w-3.5 h-3.5 text-gray-400" />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="w-[2px] h-4 bg-[#FFCB74]" />
-                </div>
 
-                {/* عقد الشجرة مع التمييز البصري لموضع الطالب */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative">
-                  {courseConceptTree.map((node, index) => {
-                    const studentLevel = determineLevel(score);
-                    const startIndex = getStartingConceptIndex(studentLevel);
-
-                    const isCurrent = index === startIndex;
-                    const isMastered = index < startIndex;
-                    const isLocked = index > startIndex;
-
-                    return (
-                      <div
-                        key={index}
-                        className={`rounded-2xl p-3.5 border transition-all flex flex-col justify-between relative ${
-                          isCurrent
-                            ? 'bg-[#FFCB74]/20 border-[#FFCB74] shadow-[0_0_20px_rgba(255,203,116,0.35)] ring-2 ring-[#FFCB74]'
-                            : isMastered
-                            ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-white/50 dark:bg-[#2F2F2F]/40 border-[#2F2F2F]/20 opacity-60'
-                        }`}
-                      >
-                        {/* بادج الحالة */}
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                            isCurrent
-                              ? 'bg-[#FFCB74] text-[#111111]'
-                              : isMastered
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-gray-300 dark:bg-[#2F2F2F] text-gray-500'
-                          }`}>
-                            {isMastered ? '✓' : index + 1}
+                  {/* لوحة التفاصيل الجانبية الفورية بحجم متناسق */}
+                  <div className="w-full lg:w-72 p-3.5 overflow-y-auto bg-white dark:bg-[#1a1a1a] flex flex-col justify-between shrink-0 text-right">
+                    {selectedResultNode ? (
+                      <div>
+                        <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+                          <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#FFCB74]">
+                            تفاصيل المحطة
                           </span>
-
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                            isCurrent
-                              ? 'bg-[#FFCB74] text-[#111111] animate-pulse'
-                              : isMastered
-                              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                              : 'bg-gray-200 dark:bg-[#111111] text-gray-400'
-                          }`}>
-                            {isCurrent ? '📍 نقطة انطلاقك' : isMastered ? 'مُتقن ومُجتاز' : 'مفهوم قادم'}
+                          <span className="text-[9px] font-mono font-bold text-gray-400">
+                            #{selectedResultNode.id}
                           </span>
                         </div>
+
+                        <h4 className="text-xs font-black text-[#111111] dark:text-white mb-1">
+                          {selectedResultNode.title}
+                        </h4>
+
+                        <p className="text-[10px] leading-relaxed text-gray-600 dark:text-gray-300 mb-2.5">
+                          {selectedResultNode.summary}
+                        </p>
 
                         <div>
-                          <h4 className="text-xs font-black text-[#111111] dark:text-white mb-1">
-                            {node.title}
-                          </h4>
-                          <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-tight mb-2">
-                            {node.description}
-                          </p>
-                        </div>
+                          <span className="text-[10px] font-black text-[#FFCB74] block mb-1.5 flex items-center gap-1">
+                            <GitBranch className="w-3 h-3" />
+                            <span>المفاهيم المتفرعة:</span>
+                          </span>
 
-                        {/* المفاهيم الفرعية */}
-                        <div className="pt-2 border-t border-[#2F2F2F]/10 dark:border-[#2F2F2F] space-y-1">
-                          {node.subConcepts.map((sub, sIdx) => (
-                            <div
-                              key={sIdx}
-                              className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/10 flex items-center justify-between"
-                            >
-                              <span>{sub}</span>
-                              {isMastered && <span className="text-emerald-500">✓</span>}
-                              {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#FFCB74] animate-ping" />}
-                              {isLocked && <Lock className="w-2.5 h-2.5 opacity-40" />}
-                            </div>
-                          ))}
+                          <div className="space-y-1">
+                            {selectedResultNode.subTopics.map((topic) => (
+                              <div
+                                key={topic.id}
+                                className="p-1.5 rounded-lg border border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-slate-50 dark:bg-[#222222] flex items-center justify-between text-[10px]"
+                              >
+                                <div className="flex items-center gap-1 truncate">
+                                  <span className="w-1 h-1 rounded-full bg-[#FFCB74] shrink-0" />
+                                  <span className="font-semibold text-gray-800 dark:text-gray-200 truncate">
+                                    {topic.name}
+                                  </span>
+                                </div>
+                                <span className={`text-[7px] font-bold px-1 py-0.2 rounded shrink-0 ${
+                                  topic.difficulty === 'سهل'
+                                    ? 'bg-emerald-500/10 text-emerald-500'
+                                    : topic.difficulty === 'متوسط'
+                                    ? 'bg-amber-500/10 text-amber-500'
+                                    : 'bg-red-500/10 text-red-500'
+                                }`}>
+                                  {topic.difficulty}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 text-xs">
+                        <Info className="w-5 h-5 mb-1 opacity-50" />
+                        <span>انقري على أي عقدة لعرض تفاصيلها</span>
+                      </div>
+                    )}
+
+                    <div className="text-[9px] text-gray-400 pt-2 mt-2 border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+                      💡 ستبدأ الدراسة مباشرة من المحطة المحددة.
+                    </div>
+                  </div>
+
                 </div>
+
               </div>
 
-              {/* زر الانتقال لموضع الطالب بالدرس */}
-              <button
-                onClick={() => onFinishTest(score, determineLevel(score))}
-                className="py-3.5 px-10 rounded-full font-black text-[#111111] text-sm bg-[#FFCB74] shadow-[0_0_35px_rgba(255,203,116,0.5)] hover:shadow-[0_0_50px_rgba(255,203,116,0.8)] hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 mx-auto"
-              >
-                <span>الانتقال لدراسة المفهوم المحدد مباشرة</span>
-                <ArrowLeft className="w-4 h-4" />
-              </button>
+              {/* أزرار الإجراءات: زر المتابعة، زر إعادة الاختبار، وزر العودة للمقررات لعدم حصر الطالب */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                <button
+                  onClick={() => onFinishTest(score, determineLevel(score))}
+                  className="w-full sm:w-auto py-2.5 px-6 rounded-full font-black text-[#111111] text-xs bg-[#FFCB74] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>الانتقال لدراسة المفهوم المحدد مباشرة</span>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={handleRetakeTest}
+                  className="w-full sm:w-auto py-2.5 px-4 rounded-full font-bold text-xs border border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-[#FFCB74] hover:bg-[#FFCB74]/10 text-gray-700 dark:text-gray-300 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>إعادة الاختبار</span>
+                </button>
+
+                <button
+                  onClick={onCancel}
+                  className="w-full sm:w-auto py-2.5 px-4 rounded-full font-bold text-xs border border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-white/40 hover:bg-white/5 text-gray-500 dark:text-gray-400 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>العودة لقائمة المقررات</span>
+                </button>
+              </div>
+
             </div>
           )}
 

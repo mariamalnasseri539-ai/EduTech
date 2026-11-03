@@ -79,7 +79,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     else if (currentView === 'settings') setActiveTab('settings');
   }, [currentView]);
 
-  // أنيميشن النقاط المضيئة بالخلفية متكيف مع المظهر
+  // أنيميشن النقاط المضيئة بالخلفية متكيف مع المظهر بوضوح عالٍ
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -97,13 +97,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
-    const particles = Array.from({ length: 40 }, () => ({
+    const particles = Array.from({ length: 50 }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      radius: Math.random() * 2 + 0.8,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      alpha: Math.random() * 0.5 + 0.2,
+      radius: Math.random() * 2.5 + 1.2,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      alpha: Math.random() * 0.6 + 0.35,
       color: '255, 203, 116',
     }));
 
@@ -120,8 +120,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = `rgba(${p.color}, 0.8)`;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = `rgba(${p.color}, 0.9)`;
         ctx.fill();
       });
       animationFrameId = requestAnimationFrame(render);
@@ -171,10 +171,10 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   return (
     <div className="min-h-screen bg-[#F6F6F6] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] flex flex-col font-sans selection:bg-[#FFCB74]/30 overflow-x-hidden relative transition-colors duration-300" dir="rtl">
       
-      {/* خلفية الإضاءة والنقاط */}
-      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-80" />
-      <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-[#FFCB74]/[0.06] rounded-full blur-[150px] pointer-events-none" />
-      <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#FFCB74]/[0.04] rounded-full blur-[150px] pointer-events-none" />
+      {/* خلفية الإضاءة والنقاط المضيئة (ظاهرة دائماً فوق خلفية الصفحة وخلف المحتوى) */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[1] opacity-90" />
+      <div className="fixed top-1/4 right-1/4 w-[500px] h-[500px] bg-[#FFCB74]/[0.06] rounded-full blur-[150px] pointer-events-none z-[1]" />
+      <div className="fixed bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#FFCB74]/[0.04] rounded-full blur-[150px] pointer-events-none z-[1]" />
 
       {/* ستارة التعتيم عند فتح السايد بار */}
       {isSidebarOpen && (
@@ -268,8 +268,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
       </header>
 
-      {/* جسم الصفحة المتغير حسب التبويب المختار مع مسافة pt-20 لتعويض الهيدر الثابت */}
-      <div className="flex-1 flex flex-col z-10 pt-20">
+      {/* جسم الصفحة المتغير حسب التبويب المختار */}
+      <div className="flex-1 flex flex-col relative z-10 pt-20">
         
         {/* 1. صفحة المقررات */}
         {currentView === 'courses' && (
@@ -411,12 +411,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
               <div className="grid grid-cols-4 gap-4 relative z-10">
                 
-                {/* 1. تحديد المستوى: ذهبي ناصع ومتوهج بالكامل */}
+                {/* 1. تحديد المستوى */}
                 <div className="flex flex-col items-center text-center">
                   <div className="w-14 h-14 rounded-full bg-[#FFCB74] border-2 border-white dark:border-[#111111] flex items-center justify-center shadow-[0_0_20px_rgba(255,203,116,0.6)] mb-2.5 transition-all ring-2 ring-[#FFCB74]">
                     <Target className="w-6 h-6 stroke-[2.4] text-[#111111] drop-shadow-sm" />
                   </div>
-                  <div className="text-sm font-bold text-[#111111] dark:text-[#FFFFFF]">1. تحديد المستوى</div>
+                  <div className="text-sm font-bold text-[#111111] dark:text-[#FFFFFF]">تحديد المستوى</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">فحص تشخيصي أولي</div>
                 </div>
 
