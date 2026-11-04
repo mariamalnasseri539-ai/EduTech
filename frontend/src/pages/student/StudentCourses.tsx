@@ -176,7 +176,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       level: 'مبتدئ',
       duration: '32 ساعة',
       lessonsCount: 48,
-      progress: 100, // مكتمل وناجح مثلاً بنسبة 90%
+      progress: 100,
       icon: Code2,
       color: '#FFCB74',
       tag: 'مقرر مخصص لكِ',
@@ -950,47 +950,53 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
         </div>
       )}
 
-      {/* ================= النافذة المنبثقة لشجرة المفاهيم التفاعلية ================= */}
+      {/* ================= النافذة المنبثقة لشجرة المفاهيم المصغرة والمرتبة ================= */}
       {activeModalCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
           <div 
-            className="border rounded-3xl w-full max-w-6xl h-[88vh] flex flex-col overflow-hidden transition-all duration-300 bg-white dark:bg-[#1a1a1a] border-[#2F2F2F]/20 dark:border-[#2F2F2F] shadow-2xl"
+            className="border rounded-2xl w-full max-w-3xl max-h-[75vh] flex flex-col overflow-hidden transition-all duration-300 bg-white dark:bg-[#1a1a1a] border-[#2F2F2F]/20 dark:border-[#2F2F2F] shadow-2xl"
             dir="rtl"
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0">
-              <div className="flex items-center gap-3">
-                <PlatformLogo size={36} />
+            {/* ترويسة النافذة المدمجة */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0">
+              <div className="flex items-center gap-2">
+                <PlatformLogo size={28} />
                 <div>
-                  <h3 className="text-sm sm:text-base font-black flex items-center gap-2 text-[#111111] dark:text-white">
-                    <span>خارطة المعرفة التكيفية:</span>
+                  <h3 className="text-xs font-black flex items-center gap-1.5 text-[#111111] dark:text-white">
+                    <span>شجرة المفاهيم:</span>
                     <span className="text-[#FFCB74]">{activeModalCourse.title}</span>
                   </h3>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                  <p className="text-[9px] text-gray-500 dark:text-gray-400">
                     {currentStudentLevel 
-                      ? `تم ضبط مسارك التكيفي الحالي وفق نتيجة الاختبار: ${currentStudentLevel}` 
-                      : 'اضغطي على أي محطة لاستعراض تفاصيلها ومفاهيمها الفرعية'}
+                      ? `المسار التكيفي: ${currentStudentLevel}` 
+                      : 'انقري على أي محطة لعرض تفاصيلها'}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setActiveModalCourse(null)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-gray-100 dark:bg-[#252525] hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-gray-300"
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-all bg-gray-100 dark:bg-[#252525] hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-gray-300 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
+            {/* مساحة العمل المقسمة بحجم صغير ومحكم */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-              <div className="flex-1 p-6 overflow-y-auto overflow-x-auto flex flex-col items-center justify-start bg-slate-50/50 dark:bg-[#141414]/50 border-b lg:border-b-0 lg:border-l border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
-                <div className="px-6 py-2.5 rounded-full bg-[#FFCB74] text-[#111111] font-black text-xs shadow-md flex items-center gap-2 border-2 border-white dark:border-[#111111] shrink-0">
-                  <Sparkles className="w-4 h-4" />
+              
+              {/* قسم الشجرة المدمج */}
+              <div className="flex-1 p-3.5 overflow-y-auto flex flex-col items-center justify-start bg-slate-50/50 dark:bg-[#141414]/50 border-b lg:border-b-0 lg:border-l border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+                
+                <div className="px-3.5 py-1 rounded-full bg-[#FFCB74] text-[#111111] font-black text-[10px] shadow-xs flex items-center gap-1 border border-white dark:border-[#111111] shrink-0">
+                  <Sparkles className="w-2.5 h-2.5" />
                   <span>{activeModalCourse.title}</span>
                 </div>
 
-                <div className="w-[2px] h-6 bg-[#FFCB74]/70" />
+                <div className="w-[2px] h-3 bg-[#FFCB74]/70 shrink-0" />
 
-                <div className="w-full max-w-2xl flex flex-col items-center">
+                {/* كبسولات المحطات موحدة وصغيرة */}
+                <div className="w-full max-w-xs flex flex-col items-center">
                   {activeModalCourse.conceptTree.map((node, index) => {
                     const startIndex = getStartingConceptIndex(currentStudentLevel);
                     const hasTested = startIndex !== null;
@@ -1002,113 +1008,106 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                     return (
                       <div key={node.id} className="w-full flex flex-col items-center">
                         {index > 0 && (
-                          <div className={`w-[2px] h-6 transition-colors ${
+                          <div className={`w-[2px] h-3 shrink-0 transition-colors ${
                             isMastered ? 'bg-emerald-500' : isCurrent ? 'bg-[#FFCB74]' : 'bg-[#2F2F2F]/30 dark:bg-[#2F2F2F]'
                           }`} />
                         )}
 
                         <div
                           onClick={() => setSelectedNode(node)}
-                          className={`w-full max-w-lg p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                          className={`w-full h-11 px-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between shrink-0 ${
                             isSelected
-                              ? 'ring-2 ring-[#FFCB74] scale-[1.02] shadow-lg'
+                              ? 'ring-1.5 ring-[#FFCB74] scale-[1.01] shadow-xs'
                               : 'hover:scale-[1.01]'
                           } ${
                             isCurrent
-                              ? 'bg-[#FFCB74]/15 border-[#FFCB74] shadow-[0_0_20px_rgba(255,203,116,0.3)]'
+                              ? 'bg-[#FFCB74]/15 border-[#FFCB74]'
                               : isMastered
-                              ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-600 dark:text-emerald-400'
+                              ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
                               : isLocked
                               ? 'bg-white/60 dark:bg-[#1a1a1a]/60 border-[#2F2F2F]/20 opacity-60'
                               : 'bg-white dark:bg-[#242424] border-[#2F2F2F]/20 hover:border-[#FFCB74]'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-xl text-xs font-black flex items-center justify-center shrink-0 shadow-xs ${
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <div className={`w-5 h-5 rounded-md text-[9px] font-black flex items-center justify-center shrink-0 ${
                               isCurrent
                                 ? 'bg-[#FFCB74] text-[#111111]'
                                 : isMastered
                                 ? 'bg-emerald-500 text-white'
                                 : 'bg-gray-100 dark:bg-[#333333] text-gray-600 dark:text-gray-300'
                             }`}>
-                              {isMastered ? <CheckCircle2 className="w-4 h-4 stroke-[3]" /> : index + 1}
+                              {isMastered ? <CheckCircle2 className="w-3 h-3 stroke-[2.5]" /> : index + 1}
                             </div>
 
-                            <div className="text-right">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-xs sm:text-sm font-black text-[#111111] dark:text-white">
-                                  {node.title}
-                                </h4>
-                                <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74]">
-                                  {node.categoryLevel}
-                                </span>
-                              </div>
-                              <span className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">
-                                {node.subTopics.length} مفاهيم فرعية مبرمجة
+                            <div className="text-right truncate">
+                              <h4 className="text-[11px] font-black text-[#111111] dark:text-white truncate">
+                                {node.title}
+                              </h4>
+                              <span className="text-[8px] text-gray-500 dark:text-gray-400 block -mt-0.5">
+                                {node.categoryLevel}
                               </span>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 shrink-0">
                             {isCurrent && (
-                              <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-[#FFCB74] text-[#111111] animate-pulse whitespace-nowrap shadow-xs">
-                                📍 نقطة انطلاقك
+                              <span className="text-[7px] font-black px-1 py-0.2 rounded-full bg-[#FFCB74] text-[#111111] whitespace-nowrap">
+                                انطلاقك
                               </span>
                             )}
                             {isMastered && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 whitespace-nowrap">
-                                مُتقن ومُجتاز
+                              <span className="text-[7px] font-bold px-1 py-0.2 rounded-full bg-emerald-500/20 text-emerald-500 whitespace-nowrap">
+                                مُتقن
                               </span>
                             )}
-                            {isLocked && <Lock className="w-4 h-4 text-gray-400" />}
-                            <ChevronLeft className="w-4 h-4 text-gray-400" />
+                            {isLocked && <Lock className="w-2.5 h-2.5 text-gray-400" />}
+                            <ChevronLeft className="w-3 h-3 text-gray-400" />
                           </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
               </div>
 
-              <div className="w-full lg:w-96 p-5 sm:p-6 overflow-y-auto bg-white dark:bg-[#1a1a1a] flex flex-col justify-between shrink-0">
+              {/* لوحة التفاصيل الجانبية المدمجة (w-64) */}
+              <div className="w-full lg:w-64 p-3 overflow-y-auto bg-white dark:bg-[#1a1a1a] flex flex-col justify-between shrink-0 text-right">
                 {selectedNode ? (
                   <div>
-                    <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
-                      <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-[#FFCB74]/20 text-[#FFCB74] border border-[#FFCB74]/30">
-                        تفاصيل المحطة المعرفية
+                    <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+                      <span className="text-[8px] font-black px-1.5 py-0.2 rounded-full bg-[#FFCB74]/20 text-[#FFCB74]">
+                        تفاصيل المحطة
                       </span>
-                      <span className="text-xs font-mono font-bold text-gray-400">
-                        Node #{selectedNode.id}
+                      <span className="text-[8px] font-mono text-gray-400">
+                        #{selectedNode.id}
                       </span>
                     </div>
 
-                    <h4 className="text-base font-black text-[#111111] dark:text-white mb-2">
+                    <h4 className="text-xs font-black text-[#111111] dark:text-white mb-0.5">
                       {selectedNode.title}
                     </h4>
 
-                    <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300 mb-5">
+                    <p className="text-[9px] leading-relaxed text-gray-600 dark:text-gray-300 mb-2">
                       {selectedNode.summary}
                     </p>
 
                     <div>
-                      <span className="text-xs font-black text-[#FFCB74] block mb-2.5 flex items-center gap-1.5">
-                        <GitBranch className="w-3.5 h-3.5" />
-                        <span>المفاهيم والتطبيقات المتفرعة:</span>
+                      <span className="text-[9px] font-black text-[#FFCB74] block mb-1">
+                        المفاهيم المتفرعة:
                       </span>
 
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         {selectedNode.subTopics.map((topic) => (
                           <div
                             key={topic.id}
-                            className="p-2.5 rounded-xl border border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-slate-50 dark:bg-[#222222] flex items-center justify-between text-xs"
+                            className="p-1 rounded-md border border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-slate-50 dark:bg-[#222222] flex items-center justify-between text-[9px]"
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FFCB74]" />
-                              <span className="font-semibold text-gray-800 dark:text-gray-200">
-                                {topic.name}
-                              </span>
-                            </div>
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                            <span className="font-semibold text-gray-800 dark:text-gray-200 truncate pr-1">
+                              {topic.name}
+                            </span>
+                            <span className={`text-[7px] font-bold px-1 py-0.2 rounded shrink-0 ${
                               topic.difficulty === 'سهل'
                                 ? 'bg-emerald-500/10 text-emerald-500'
                                 : topic.difficulty === 'متوسط'
@@ -1124,30 +1123,32 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 text-xs">
-                    <Info className="w-8 h-8 mb-2 opacity-50" />
-                    <span>انقري على أي عقدة في الشجرة لعرض تفاصيلها</span>
+                    <Info className="w-5 h-5 mb-1 opacity-50" />
+                    <span>انقري على محطة</span>
                   </div>
                 )}
 
-                <div className="pt-4 mt-6 border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
+                <div className="pt-2 mt-2 border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F]">
                   <button
                     onClick={() => {
                       const course = activeModalCourse;
                       setActiveModalCourse(null);
                       setCourseToStart(course);
                     }}
-                    className="w-full py-3 px-6 rounded-2xl font-black text-xs bg-[#FFCB74] text-[#111111] shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-2 px-3 rounded-lg font-black text-[11px] bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-[1.01] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span>بدء دراسة هذا المقرر الآن</span>
-                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>بدء دراسة المقرر</span>
+                    <Play className="w-3 h-3 fill-current" />
                   </button>
                 </div>
               </div>
+
             </div>
 
-            <div className="px-6 py-2.5 border-t flex items-center justify-between border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0 text-xs text-gray-500 dark:text-gray-400 font-medium">
-              <span>الهيكل المعرفي الكامل يوضح تسلسل المحطات وفق نمط بلوم المعرفي للتعلم التكيفي.</span>
-              <span className="text-[#FFCB74] font-bold">منصة إديوتك الذكية • EduTech 2026</span>
+            {/* شريط سفلي مختصر */}
+            <div className="px-4 py-1.5 border-t flex items-center justify-between border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0 text-[9px] text-gray-500 dark:text-gray-400">
+              <span>تسلسل المحطات وفق نمط بلوم المعرفي التكيفي.</span>
+              <span className="text-[#FFCB74] font-bold">إديوتك 2026</span>
             </div>
           </div>
         </div>

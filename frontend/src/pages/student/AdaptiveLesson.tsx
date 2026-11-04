@@ -156,7 +156,6 @@ export const AdaptiveLesson: React.FC<AdaptiveLessonProps> = ({
     { id: 'settings', label: 'الإعدادات', icon: Settings },
   ];
 
-  // بطاقات المفاهيم مدعومة بالأنماط التفاعلية المتنوعة مع الحفاظ التام على نمط سيسكو المعتمد
   const lessonCards: CardData[] = [
     {
       id: 1,
@@ -265,11 +264,10 @@ print("المستوى بعد التحديث:", status)`,
           ]
         }
       ],
-      // أسئلة البطاقة 1: سؤال نصي، ثم كبسولة ناعمة، ثم نمط سيسكو بالطرفية
       challenges: [
         {
           id: 'c1_q1',
-          type: 'theory_mcq', // سؤال مفاهيمي نصي بحت
+          type: 'theory_mcq',
           questionText: 'ما الذي يميز نظام الكتابة في لغة Python بخصوص المتغيرات وفق ما تعلمتِ في السلايدات؟',
           options: [
             'يجب كتابة نوع المتغير صراحة (int, str) قبل اسمه.',
@@ -282,7 +280,7 @@ print("المستوى بعد التحديث:", status)`,
         },
         {
           id: 'c1_q2',
-          type: 'tap_chips', // كبسولات ناعمة تقفز إلى الفراغ
+          type: 'tap_chips',
           questionText: 'انقري الكبسولة البرمجية المناسبة لتحويل المدخل النصي إلى رقم صحيح:',
           fileName: 'type_casting.py',
           codeTemplateParts: [
@@ -295,7 +293,7 @@ print("المستوى بعد التحديث:", status)`,
         },
         {
           id: 'c1_q3',
-          type: 'code_slot', // نمط سيسكو المعتمد (أهداف + طرفية + زر Run)
+          type: 'code_slot',
           questionText: 'أكملي الكود باختيار الدالة المناسبة لطباعة المتغير على الطرفية:',
           fileName: 'user_profile.py',
           goals: [{ id: 'g1', text: 'تحديد دالة الإخراج والطباعة القياسية', expectedValue: 'print' }],
@@ -405,11 +403,10 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
           ]
         }
       ],
-      // أسئلة البطاقة 2: تتبع كود، ثم سؤال نصي مفاهيمي، ثم نمط سيسكو المعتمد (الأس الرياضي كما في صورتك)
       challenges: [
         {
           id: 'c2_q1',
-          type: 'code_tracing', // تتبع أسطر
+          type: 'code_tracing',
           questionText: 'ما هي النتيجة النهائية للعملية الحسابية التالية وفق أسبقية بايثون؟',
           codeSnippet: `x = 20\ny = 6\nprint(x // y + x % y)`,
           options: ['3', '5', '4', '2'],
@@ -418,7 +415,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
         },
         {
           id: 'c2_q2',
-          type: 'theory_mcq', // سؤال نظري مفاهيمي بدون أكواد
+          type: 'theory_mcq',
           questionText: 'ما المشغل الرياضي الذي يعيد باقي القسمة بين رقمين في لغة Python؟',
           options: ['//', '%', '**', '/'],
           correctAnswerIndex: 1,
@@ -426,7 +423,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
         },
         {
           id: 'c2_q3',
-          type: 'code_slot', // نمط سيسكو المعتمد (الذي في صورتك تماماً)
+          type: 'code_slot',
           questionText: 'استخدام مشغل القوى لحساب 2 أس 3:',
           fileName: 'math_power.py',
           goals: [{ id: 'g1', text: 'استخدام مشغل القوى لحساب 2 أس 3', expectedValue: '**' }],
@@ -443,32 +440,66 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
     }
   ];
 
+  // بنك الأسئلة الشامل المتكامل مع المقرر
   const comprehensiveQuestions: ComprehensiveQuestion[] = [
     {
       id: 1,
-      questionText: 'ما هي نتيجة تنفيذ: print(10 // 3 + 10 % 3) في لغة بايثون؟',
-      options: ['4', '3', '4.33', '1'],
+      questionText: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? 'في هندسة الأوامر (Prompt Engineering)، ما هو الدور الأساسي للـ System Prompt مقارنة بالـ User Prompt؟'
+        : 'ما هي نتيجة تنفيذ: print(10 // 3 + 10 % 3) في لغة بايثون؟',
+      options: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? [
+            'تحديد الهوية العامة والسلوك والقواعد الحاكمة للنموذج قبل بدء المحادثة.',
+            'حساب التكلفة المالية لكل توكن مستهلك في الجلسة.',
+            'توليد صور تلقائية مرفقة بالردود النصية.',
+            'إيقاف معالج الـ GPU وقت خمول الاستجابة.'
+          ]
+        : ['4', '3', '4.33', '1'],
       correctAnswer: 0,
-      explanation: 'القسمة الصحيحة تعطي 3 وباقي القسمة 1، المجموع = 4.'
+      explanation: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? 'الـ System Prompt يحدد شخصية وسياق وقواعد استجابة النموذج للتحكم في المخرجات وضمان دقتها.'
+        : 'القسمة الصحيحة تعطي 3 وباقي القسمة 1، المجموع = 4.'
     },
     {
       id: 2,
-      questionText: 'أي من الأسماء التالية يُعتبر اسماً صحيحاً لمتغير وفق معايير Python (snake_case)؟',
-      options: ['2nd_score', 'student_total_score', 'student-score', 'class'],
+      questionText: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? 'ماذا يُقصد بتقنية (Few-Shot Prompting) عند توجيه النماذج التوليدية؟'
+        : 'أي من الأسماء التالية يُعتبر اسماً صحيحاً لمتغير وفق معايير Python (snake_case)؟',
+      options: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? [
+            'إرسال الأمر دون أي أمثلة سابقة نهائياً.',
+            'تزويد النموذج ببضعة أمثلة توضيحية لمدخلات ومخرجات سابقة لضبط نسق الإجابة.',
+            'تدريب النموذج من الصفر على مجموعة بيانات ضخمة.',
+            'تقليل عدد التوكنات لأدنى حد لتوفير الذاكرة.'
+          ]
+        : ['2nd_score', 'student_total_score', 'student-score', 'class'],
       correctAnswer: 1,
-      explanation: 'الاسم student_total_score يتبع قواعد التسمية ولا يبدأ برقم ولا يحتوي على علامات محجوزة.'
+      explanation: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? 'تقنية Few-Shot تعتمد على تزويد النموذج بأمثلة محددة وموجهة داخل السياق لفهم المطلوب دون إعادة تدريب.'
+        : 'الاسم student_total_score يتبع قواعد التسمية ولا يبدأ برقم ولا يحتوي على علامات محجوزة.'
     },
     {
       id: 3,
-      questionText: 'ماذا يحدث لقيمة المتغير القديمة في الذاكرة عند إسناد قيمة جديدة لنفس الاسم؟',
-      options: [
-        'تُدمج القيمة الجديدة مع القديمة تلقائياً.',
-        'يحدث خطأ تكرار (NameError).',
-        'يتم استبدال المرجع بالقيمة الجديدة وتفريغ القديمة عبر Garbage Collector.',
-        'تظل القيمة القديمة ولا تُحذف أبداً.'
-      ],
-      correctAnswer: 2,
-      explanation: 'الاسم يرتبط بالقيمة الجديدة، والقديمة تُفرغ من الذاكرة إذا لم تعد مستخدمة.'
+      questionText: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? 'ما وظيفة معامل درجة الحرارة (Temperature) في استدعاءات نماذج الـ LLM؟'
+        : 'ماذا يحدث لقيمة المتغير القديمة في الذاكرة عند إسناد قيمة جديدة لنفس الاسم؟',
+      options: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? [
+            'قياس درجة حرارة المعالج المركزي للسيرفر.',
+            'التحكم في درجة العشوائية والابتكارية مقابل الدقة والتوقع في المخرجات.',
+            'تحديد سرعة نقل البيانات عبر الإنترنت.',
+            'تحديد لغة البرمجة التي كُتب بها النموذج.'
+          ]
+        : [
+            'تُدمج القيمة الجديدة مع القديمة تلقائياً.',
+            'يحدث خطأ تكرار (NameError).',
+            'يتم استبدال المرجع بالقيمة الجديدة وتفريغ القديمة عبر Garbage Collector.',
+            'تظل القيمة القديمة ولا تُحذف أبداً.'
+          ],
+      correctAnswer: courseTitle.includes('ai') || courseTitle.includes('الذكاء') ? 1 : 2,
+      explanation: courseTitle.includes('ai') || courseTitle.includes('الذكاء')
+        ? 'خفض Temperature (مثل 0.1) يعطي إجابات دقيقة ومحددة، بينما رفعه (مثل 0.8) يزيد من التنوع الإبداعي.'
+        : 'الاسم يرتبط بالقيمة الجديدة، والقديمة تُفرغ من الذاكرة إذا لم تعد مستخدمة.'
     }
   ];
 
@@ -500,7 +531,6 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
     setIsCurrentChallengeCompleted(false);
   }, [currentChallengeIndex, currentCardIndex]);
 
-  // أنيميشن الخلفية
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -577,7 +607,6 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
     }, 600);
   };
 
-  // معالجة الانتقال بسهم موحد لليسار
   const handleNextChallenge = () => {
     if (currentChallengeIndex + 1 < currentCard.challenges.length) {
       setCurrentChallengeIndex(prev => prev + 1);
@@ -591,23 +620,28 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
         setIsCurrentChallengeCompleted(false);
         setCurrentStep('theory');
       } else {
+        setCompQuizIndex(0);
+        setCompSelectedOption(null);
+        setCompScore(0);
         setCurrentStep('comprehensive_quiz');
       }
     }
   };
 
+  // معالجة الانتقال بين الأسئلة الثلاثة للاختبار الشامل
   const handleNextCompQuestion = () => {
     if (compSelectedOption === null) return;
 
+    const currentQuestion = comprehensiveQuestions[compQuizIndex];
     let newScore = compScore;
-    if (compSelectedOption === comprehensiveQuestions[compQuizIndex].correctAnswer) {
+    if (compSelectedOption === currentQuestion.correctAnswer) {
       newScore += 1;
       setCompScore(newScore);
       setXp((prev) => prev + 30);
     }
 
     if (compQuizIndex + 1 < comprehensiveQuestions.length) {
-      setCompQuizIndex(compQuizIndex + 1);
+      setCompQuizIndex((prev) => prev + 1);
       setCompSelectedOption(null);
     } else {
       setCurrentStep('mastery_result');
@@ -653,13 +687,17 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
       {/* القائمة الجانبية */}
       <aside 
-        className={`fixed top-0 right-0 h-full w-72 border-l z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between py-6 px-5 shadow-2xl ${
+        style={{
+          transform: isSidebarOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s ease-in-out'
+        }}
+        className={`fixed top-0 right-0 h-full w-72 border-l z-50 flex flex-col justify-between py-6 px-5 shadow-2xl ${
           lessonTheme === 'dark'
             ? 'bg-[#111111] border-[#2F2F2F] text-white'
             : lessonTheme === 'neutral'
             ? 'bg-[#181C24] border-[#313A4D] text-white'
             : 'bg-white border-gray-200 text-gray-800'
-        } ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        }`}
       >
         <div>
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
@@ -709,7 +747,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
         </div>
       </aside>
 
-      {/* الشريط العلوي مع محدد الثيمات فقط */}
+      {/* الشريط العلوي مع محدد الثيمات */}
       <header className={`fixed top-0 inset-x-0 w-full flex items-center justify-between px-6 lg:px-12 py-3.5 border-b z-40 backdrop-blur-md transition-colors ${
         lessonTheme === 'dark'
           ? 'bg-[#111111]/90 border-[#2F2F2F]'
@@ -783,7 +821,9 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
               <span className="text-xs text-[#FFCB74] font-bold">المستوى التكيفي: {studentLevel}</span>
               <span className="opacity-40">•</span>
               <span className="text-xs opacity-75">
-                {currentStep === 'comprehensive_quiz' ? 'الاختبار الشامل النهائي' : `البطاقة ${currentCardIndex + 1} من ${lessonCards.length}`}
+                {currentStep === 'comprehensive_quiz' 
+                  ? `الاختبار الشامل النهائي (سؤال ${compQuizIndex + 1} من ${comprehensiveQuestions.length})` 
+                  : `البطاقة ${currentCardIndex + 1} من ${lessonCards.length}`}
               </span>
             </div>
           </div>
@@ -1044,7 +1084,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 )}
               </div>
 
-              {/* أزرار التنقل بسهم موحد لليسار */}
+              {/* أزرار التنقل */}
               <div className="flex items-center justify-between pt-4 border-t border-white/10">
                 <button
                   disabled={currentSlideIndex === 0}
@@ -1135,7 +1175,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 </div>
               </div>
 
-              {/* محرر الكود الموسع */}
+              {/* محرر الكود */}
               <div className="w-full border border-white/10 rounded-2xl overflow-hidden mb-6 shadow-xl">
                 <div>
                   <div className="flex items-center justify-between px-4 py-2.5 bg-black/40 border-b border-white/10">
@@ -1196,7 +1236,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 </div>
               </div>
 
-              {/* أزرار التنقل بسهم موحد لليسار */}
+              {/* أزرار التنقل */}
               <div className="flex items-center justify-between pt-4 border-t border-white/10">
                 <button
                   onClick={() => {
@@ -1236,7 +1276,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
             </div>
           )}
 
-          {/* ================= 3. التحدي والتحقق المعتمد بأنماطه المتنوعة ================= */}
+          {/* ================= 3. التحدي والتحقق المعتمد ================= */}
           {currentStep === 'challenge' && (
             <div className={`border rounded-3xl p-6 sm:p-8 backdrop-blur-md transition-all ${cardSurfaceClass}`}>
               
@@ -1266,7 +1306,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 </div>
               </div>
 
-              {/* استدعاء محرك الأكواد التفاعلي الشامل */}
+              {/* محرك الأكواد التفاعلي */}
               <div className="mb-6">
                 <InteractiveCodeEngine
                   challenge={activeChallenge}
@@ -1277,7 +1317,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 />
               </div>
 
-              {/* أزرار التنقل بسهم موحد لليسار وحل مشكلة الانتقال للبطاقة التالية */}
+              {/* أزرار التنقل */}
               <div className="flex items-center justify-between pt-4 border-t border-white/10">
                 <button
                   onClick={() => setCurrentStep('practice')}
@@ -1305,7 +1345,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
             </div>
           )}
 
-          {/* ================= 4. الاختبار الشامل النهائي ================= */}
+          {/* ================= 4. الاختبار الشامل النهائي (3 أسئلة متتالية) ================= */}
           {currentStep === 'comprehensive_quiz' && (
             <div className={`border rounded-3xl p-6 sm:p-8 backdrop-blur-md transition-all ${cardSurfaceClass}`}>
               <div className="flex items-center justify-between mb-4">
@@ -1349,7 +1389,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 <button
                   disabled={compSelectedOption === null}
                   onClick={handleNextCompQuestion}
-                  className="py-2.5 px-7 rounded-xl font-black text-xs bg-[#FFCB74] text-[#111111] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                  className="py-2.5 px-7 rounded-xl font-black text-xs bg-[#FFCB74] text-[#111111] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>{compQuizIndex + 1 === comprehensiveQuestions.length ? 'إنهاء التقييم وعرض النتيجة' : 'السؤال التالي'}</span>
                   <ArrowLeft className="w-3.5 h-3.5" />
@@ -1398,7 +1438,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 {isMastered ? (
                   <button
                     onClick={() => setIsCertificateOpen(true)}
-                    className="w-full sm:w-auto py-3 px-8 rounded-full font-black text-xs bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    className="w-full sm:w-auto py-3 px-8 rounded-full font-black text-xs bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FileCheck2 className="w-4 h-4" />
                     <span>عرض وثيقة الإتقان (الشهادة)</span>
@@ -1412,7 +1452,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                       setCurrentChallengeIndex(0);
                       setCurrentStep('theory');
                     }}
-                    className="w-full sm:w-auto py-2.5 px-6 rounded-full font-bold text-xs border border-white/20 hover:border-[#FFCB74] transition-all"
+                    className="w-full sm:w-auto py-2.5 px-6 rounded-full font-bold text-xs border border-white/20 hover:border-[#FFCB74] transition-all cursor-pointer"
                   >
                     مراجعة السلايدات مجدداً
                   </button>
@@ -1420,7 +1460,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
                 <button
                   onClick={onBackToDashboard}
-                  className="w-full sm:w-auto py-2.5 px-6 rounded-full font-bold text-xs border border-white/10 hover:border-[#FFCB74] transition-all"
+                  className="w-full sm:w-auto py-2.5 px-6 rounded-full font-bold text-xs border border-white/10 hover:border-[#FFCB74] transition-all cursor-pointer"
                 >
                   العودة للمقررات
                 </button>
