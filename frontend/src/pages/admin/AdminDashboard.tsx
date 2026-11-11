@@ -6,7 +6,9 @@ import { AdminOverviewView } from './views/AdminOverviewView';
 import { AdminUsersView } from './views/AdminUsersView';
 import { AdminCohortAnalyticsView } from './views/AdminCohortAnalyticsView';
 import { AdminTopicMapsView } from './views/AdminTopicMapsView';
+import { AdminPromptsView } from './views/AdminPromptsView';
 import { AdminTelemetryView } from './views/AdminTelemetryView';
+import { AdminSettingsView } from './views/AdminSettingsView';
 
 interface AdminDashboardProps {
   onBackToWelcome?: () => void;
@@ -55,12 +57,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToWelcome 
 
           {currentSection === 'courses' && <AdminTopicMapsView />}
 
+          {currentSection === 'prompts' && <AdminPromptsView />}
+
           {currentSection === 'telemetry' && <AdminTelemetryView />}
+
+          {currentSection === 'settings' && <AdminSettingsView />}
         </main>
 
         {/* تذييل صفحة الأدمن (Footer) */}
         <footer className="w-full py-4 px-6 text-center text-xs border-t border-slate-200 dark:border-[#2F2F2F] bg-white/70 dark:bg-[#181818]/70 text-slate-500 dark:text-slate-400 mt-auto">
-          منصة إديوتك للتعلم التكيفي الذكي • لوحة الإشراف الأكاديمي والتحكم • جميع الحقوق محفوظة
+          منصة مسار للتعلم التكيفي الذكي • لوحة الإشراف الأكاديمي والتحكم • جميع الحقوق محفوظة
         </footer>
       </div>
     </div>

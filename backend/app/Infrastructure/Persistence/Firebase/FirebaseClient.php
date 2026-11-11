@@ -46,7 +46,7 @@ final class FirebaseClient
             $this->logger?->notice('FIREBASE_CREDENTIALS not specified or file not found. Operating with in-memory persistence adapter.');
         }
 
-        $this->seedInitialCourseCatalog();
+        $this->loadLocalStore();
     }
 
     public function getFirestore(): ?FirestoreClient
@@ -96,6 +96,24 @@ final class FirebaseClient
         }
 
         $this->localMemoryStore[$collection][$documentId] = $data;
+        $this->persistLocalStore();
+    }
+
+    /**
+     * Deletes a document from a collection.
+     *
+     * @param string $collection
+     * @param string $documentId
+     */
+    public function deleteDocument(string $collection, string $documentId): void
+    {
+        if ($this->firestore !== null) {
+            $this->firestore->collection($collection)->document($documentId)->delete();
+            return;
+        }
+
+        unset($this->localMemoryStore[$collection][$documentId]);
+        $this->persistLocalStore();
     }
 
     /**
@@ -123,14 +141,111 @@ final class FirebaseClient
      * Seeds initial course topic maps / syllabi in local store.
      * Note: strictly zero-content—only titles, prerequisites, and target concepts!
      */
+    private function getStorageFilePath(): string
+    {
+        $path = storage_path('app/firestore_store.json');
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        return $path;
+    }
+
+    private function loadLocalStore(): void
+    {
+        $file = $this->getStorageFilePath();
+        if (file_exists($file)) {
+            $content = file_get_contents($file);
+            $parsed = json_decode($content, true);
+            if (is_array($parsed) && !empty($parsed)) {
+                $this->localMemoryStore = $parsed;
+                return;
+            }
+        }
+        $this->seedInitialCourseCatalog();
+        $this->persistLocalStore();
+    }
+
+    private function persistLocalStore(): void
+    {
+        $file = $this->getStorageFilePath();
+        file_put_contents($file, json_encode($this->localMemoryStore, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
     private function seedInitialCourseCatalog(): void
     {
+        // Python 101 Course
+        $this->localMemoryStore['courses']['python-101'] = [
+            'id' => 'python-101',
+            'title' => 'أساسيات البرمجة بلغة Python',
+            'description' => 'المسار التأسيسي الشامل لتعلم المنطق البرمجي، هياكل البيانات، والخوارزميات بلغة بايثون التكيفية.',
+            'category' => 'علوم الحاسب والبرمجة',
+            'level' => 'مبتدئ',
+            'estimated_hours' => 20,
+            'placement_test_questions_count' => 6,
+            'topic_map' => [
+                'py-variables' => [
+                    'id' => 'py-variables',
+                    'title' => 'المتغيرات وأنواع البيانات الأساسية',
+                    'description' => 'مفهوم تخزين البيانات في الذاكرة، الأنواع العددية والنصية والمنطقية والتحويل بينها.',
+                    'prerequisites' => [],
+                    'target_concepts' => ['Variables', 'Data Types', 'Type Casting', 'Dynamic Typing'],
+                    'category' => 'المفاهيم التأسيسية',
+                    'order' => 1,
+                    'bloom_level' => 'تذكر وفهم (Remember/Understand)',
+                ],
+                'py-conditionals' => [
+                    'id' => 'py-conditionals',
+                    'title' => 'الجمل الشرطية والتحكم في التدفق',
+                    'description' => 'اتخاذ القرارات المنطقية باستخدام if, elif, else والمعاملات المنطقية.',
+                    'prerequisites' => ['py-variables'],
+                    'target_concepts' => ['Boolean Logic', 'If-Else Branching', 'Comparison Operators'],
+                    'category' => 'التحكم في المسار',
+                    'order' => 2,
+                    'bloom_level' => 'تطبيق (Apply)',
+                ],
+                'py-loops' => [
+                    'id' => 'py-loops',
+                    'title' => 'الحلقات التكرارية والتكرار المنطقي',
+                    'description' => 'تكرار المهام بكفاءة باستخدام حلقات for و while والتحكم عبر break و continue.',
+                    'prerequisites' => ['py-conditionals'],
+                    'target_concepts' => ['For Loops', 'While Loops', 'Loop Control', 'Range Function'],
+                    'category' => 'التحكم في المسار',
+                    'order' => 3,
+                    'bloom_level' => 'تطبيق وتحليل (Apply/Analyze)',
+                ],
+                'py-data-structures' => [
+                    'id' => 'py-data-structures',
+                    'title' => 'هياكل البيانات: القوائم والقواميس',
+                    'description' => 'التعامل مع مجموعات البيانات: Lists, Tuples, Dictionaries, Sets والعمليات عليها.',
+                    'prerequisites' => ['py-loops'],
+                    'target_concepts' => ['Lists & Tuples', 'Dictionaries', 'Key-Value Pairs', 'List Slicing'],
+                    'category' => 'هياكل البيانات',
+                    'order' => 4,
+                    'bloom_level' => 'تطبيق وتحليل (Apply/Analyze)',
+                ],
+                'py-functions' => [
+                    'id' => 'py-functions',
+                    'title' => 'الدوال والبرمجة المعيارية',
+                    'description' => 'بناء دوال قابلة لإعادة الاستخدام، المعاملات، القيم المرجعة، ونطاقات المتغيرات (Scope).',
+                    'prerequisites' => ['py-data-structures'],
+                    'target_concepts' => ['Functions Definition', 'Arguments & Return', 'Scope (LEGB)', 'Modularity'],
+                    'category' => 'المعيارية المتقدمة',
+                    'order' => 5,
+                    'bloom_level' => 'تقييم وابتكار (Evaluate/Create)',
+                ],
+            ],
+        ];
+
+        // JavaScript Advanced Course
         $this->localMemoryStore['courses']['cs-advanced-js'] = [
             'id' => 'cs-advanced-js',
             'title' => 'Advanced JavaScript: Runtime Architecture & Concurrency',
             'description' => 'Zero-content adaptive course exploring the V8 runtime, Event Loop, closures, and asynchronous concurrency.',
             'category' => 'Computer Science',
+            'level' => 'متقدم',
             'estimated_hours' => 24,
+            'placement_test_questions_count' => 6,
             'topic_map' => [
                 'js-call-stack' => [
                     'id' => 'js-call-stack',
@@ -186,41 +301,9 @@ final class FirebaseClient
             'firebase_uid' => 'mock-student-uid-101',
             'email' => 'student.ada@example.edu',
             'display_name' => 'Ada Lovelace',
-            'enrolled_courses' => ['cs-advanced-js'],
-            'preferred_language' => 'en-US',
+            'enrolled_courses' => ['python-101', 'cs-advanced-js'],
+            'preferred_language' => 'ar-SA',
             'created_at' => (new \DateTimeImmutable('-14 days'))->format(DATE_ATOM),
-        ];
-
-        // Seed initial knowledge state
-        $this->localMemoryStore['knowledge_states']['stu_101_cs-advanced-js'] = [
-            'student_id' => 'stu_101',
-            'course_id' => 'cs-advanced-js',
-            'cognitive_status' => 'ActiveLearning',
-            'skill_scores' => [
-                'js-call-stack' => [
-                    'score' => 0.88,
-                    'confidence_interval' => 0.12,
-                    'attempts_count' => 6,
-                    'last_assessed_at' => (new \DateTimeImmutable('-2 days'))->format(DATE_ATOM),
-                ],
-                'js-lexical-scope' => [
-                    'score' => 0.72,
-                    'confidence_interval' => 0.20,
-                    'attempts_count' => 4,
-                    'last_assessed_at' => (new \DateTimeImmutable('-1 day'))->format(DATE_ATOM),
-                ],
-            ],
-            'weakness_points' => [
-                [
-                    'topic_id' => 'async-event-loop',
-                    'concept_tag' => 'Async Closures in Loops',
-                    'description' => 'Confusion distinguishing function-scoped var from block-scoped let inside asynchronous timer callbacks.',
-                    'severity' => 'medium',
-                    'detected_at' => (new \DateTimeImmutable('-1 day'))->format(DATE_ATOM),
-                ],
-            ],
-            'zpd_topics' => ['async-event-loop', 'memory-garbage-collection'],
-            'last_evaluated_at' => (new \DateTimeImmutable())->format(DATE_ATOM),
         ];
     }
 }

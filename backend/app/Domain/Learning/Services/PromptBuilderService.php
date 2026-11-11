@@ -6,6 +6,7 @@ namespace App\Domain\Learning\Services;
 
 use App\Domain\KnowledgeState\Entities\StudentKnowledgeState;
 use App\Domain\KnowledgeState\Enums\CognitiveStatus;
+use App\Domain\Learning\Repositories\PromptTemplateRepositoryInterface;
 use App\Domain\Learning\ValueObjects\BloomTaxonomyLevel;
 use App\Domain\Learning\ValueObjects\DifficultyLevel;
 use App\Domain\Learning\ValueObjects\TopicId;
@@ -16,6 +17,9 @@ use App\Domain\Learning\ValueObjects\TopicId;
  */
 final class PromptBuilderService
 {
+    public function __construct(
+        private readonly ?PromptTemplateRepositoryInterface $promptRepository = null
+    ) {}
     /**
      * Builds the prompt payload for generating an adaptive lesson.
      *
@@ -84,6 +88,25 @@ PEDAGOGICAL INSTRUCTIONS:
    - Include clear prompt, starter code with comments, test cases (input, expected_output, is_hidden), and solution stub.
 PROMPT;
 
+        // Integration with Cloud Firestore Prompt Templates (static_slides)
+        $activeSlidePrompt = $this->promptRepository?->getActivePrompt('static_slides');
+        if ($activeSlidePrompt !== null && ($activeSlidePrompt['is_active'] ?? true)) {
+            if (!empty($activeSlidePrompt['system_prompt'])) {
+                $systemInstruction = (string)$activeSlidePrompt['system_prompt'];
+            }
+            if (!empty($activeSlidePrompt['user_prompt_template'])) {
+                $replacements = [
+                    '{course_title}' => (string)($topicMeta['course_title'] ?? 'المقرر الدراسي'),
+                    '{concept_title}' => (string)($topicMeta['title'] ?? $topicId->getValue()),
+                    '{student_level}' => $difficulty->value,
+                    '{target_concepts}' => $targetConcepts,
+                    '{slide_count}' => '4',
+                ];
+                $evaluated = str_replace(array_keys($replacements), array_values($replacements), (string)$activeSlidePrompt['user_prompt_template']);
+                $userPrompt = $evaluated . "\n\n" . $userPrompt;
+            }
+        }
+
         return [
             'system_instruction' => $systemInstruction,
             'user_prompt' => $userPrompt,
@@ -114,6 +137,12 @@ You are an Automated Code Evaluator and Senior Engineering Mentor.
 You evaluate student code submissions for correctness, algorithmic efficiency, clean architecture, and edge case resilience.
 You must return a structured JSON response matching the code evaluation schema.
 INSTRUCTION;
+
+        // Integration with Cloud Firestore Prompt Templates (interactive_code)
+        $activeCodePrompt = $this->promptRepository?->getActivePrompt('interactive_code');
+        if ($activeCodePrompt !== null && ($activeCodePrompt['is_active'] ?? true) && !empty($activeCodePrompt['system_prompt'])) {
+            $systemInstruction = (string)$activeCodePrompt['system_prompt'];
+        }
 
         $userPrompt = <<<PROMPT
 EVALUATE STUDENT CODE CHALLENGE SUBMISSION:

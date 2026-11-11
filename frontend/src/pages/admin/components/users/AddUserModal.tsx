@@ -123,7 +123,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, onA
               </label>
               <input
                 type="email"
-                placeholder="user@edutech.edu"
+                placeholder="user@masar.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6F6F6] dark:bg-[#252525] border border-slate-200 dark:border-[#333333] text-[#2F2F2F] dark:text-white font-mono text-xs focus:outline-none focus:border-[#FFCB74]"

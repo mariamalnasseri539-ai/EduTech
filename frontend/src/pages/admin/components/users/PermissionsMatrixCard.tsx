@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, ShieldCheck, Lock, Check, X, Info } from 'lucide-react';
+import { ShieldCheck, Lock, Check, X, Info } from 'lucide-react';
 import { AdminUser, AdminPermission } from '../../types';
 
 interface PermissionsMatrixCardProps {

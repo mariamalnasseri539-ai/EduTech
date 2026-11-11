@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  GraduationCap, 
   Search, 
   BookOpen, 
   Clock, 
@@ -13,21 +12,20 @@ import {
   Network,
   X,
   Layers,
-  GitBranch,
   Lock,
   CheckCircle2,
   ChevronLeft,
-  ChevronDown,
-  Info,
-  HelpCircle,
+  Info, 
   ArrowLeft,
   Compass,
   RotateCcw,
-  Trophy
+  Trophy,
+  Loader2
 } from 'lucide-react';
 
-// استيراد الشعار المعتمد
+// استيراد الشعار المعتمد و Axios Client
 import { PlatformLogo } from '../../components/common/PlatformLogo';
+import { apiClient } from '../../services/apiClient';
 
 interface SubTopic {
   id: string;
@@ -58,13 +56,71 @@ interface Course {
   imageUrl: string;
   mainConcepts: string[];
   conceptTree: ConceptNode[];
+  status?: 'active' | 'paused';
 }
 
 interface StudentCoursesProps {
   studentLevel?: 'مبتدئ' | 'متوسط' | 'متقدم';
   onBackToDashboard?: () => void;
-  onSelectCourse?: (courseId: string, startMode?: 'test' | 'direct_lesson') => void;
+  onSelectCourse?: (courseId: string, startMode?: 'test' | 'direct_lesson', courseTitle?: string) => void;
 }
+
+const mapTopicMapToConceptTree = (topicMapRaw: any): ConceptNode[] => {
+  if (!topicMapRaw) return [];
+  const topicList: any[] = Array.isArray(topicMapRaw)
+    ? topicMapRaw
+    : (typeof topicMapRaw === 'object' && topicMapRaw !== null ? Object.values(topicMapRaw) : []);
+
+  if (topicList.length === 0) return [];
+
+  // ترتيب الوحدات حسب order
+  topicList.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+
+  return topicList.map((topic: any, idx: number) => {
+    let categoryLevel: 'تأسيسي' | 'بنائي' | 'متقدم' = 'تأسيسي';
+    if (topic.bloomLevel) {
+      if (topic.bloomLevel.includes('تذكر') || topic.bloomLevel.includes('Remember')) categoryLevel = 'تأسيسي';
+      else if (topic.bloomLevel.includes('تطبيق') || topic.bloomLevel.includes('Apply')) categoryLevel = 'بنائي';
+      else categoryLevel = 'متقدم';
+    } else {
+      if (idx === 0) categoryLevel = 'تأسيسي';
+      else if (idx <= Math.floor(topicList.length * 0.5)) categoryLevel = 'بنائي';
+      else categoryLevel = 'متقدم';
+    }
+
+    const rawSubs = topic.subTopics || topic.sub_topics || topic.targetConcepts || [];
+    let subTopics: SubTopic[] = [];
+
+    if (Array.isArray(rawSubs) && rawSubs.length > 0) {
+      subTopics = rawSubs.map((st: any, sIdx: number) => {
+        const subName = typeof st === 'string' ? st : (st.name || st.title || 'مفهوم فرعي');
+        const subDiff = typeof st === 'object' && st.difficulty ? st.difficulty : (categoryLevel === 'تأسيسي' ? 'سهل' : categoryLevel === 'بنائي' ? 'متوسط' : 'متقدم');
+        return {
+          id: (typeof st === 'object' && st.id) ? st.id : `st_${idx}_${sIdx}`,
+          name: subName,
+          difficulty: subDiff as 'سهل' | 'متوسط' | 'متقدم',
+        };
+      });
+    } else {
+      const topicTitle = topic.title || topic.name || `مفهوم #${idx + 1}`;
+      subTopics = [
+        { id: `st_${idx}_1`, name: `تطبيق عملي: ${topicTitle}`, difficulty: categoryLevel === 'تأسيسي' ? 'سهل' : 'متوسط' },
+        { id: `st_${idx}_2`, name: `تمارين ومسائل تكيفية: ${topicTitle}`, difficulty: categoryLevel === 'متقدم' ? 'متقدم' : 'متوسط' },
+      ];
+    }
+
+    const title = topic.title || topic.name || `مفهوم #${idx + 1}`;
+    const summary = topic.description || `فهم واستيعاب ${title} وتطبيقاتها العملية في مسار البرمجة.`;
+
+    return {
+      id: idx + 1,
+      title,
+      summary,
+      categoryLevel,
+      subTopics,
+    };
+  });
+};
 
 export const StudentCourses: React.FC<StudentCoursesProps> = ({
   studentLevel,
@@ -81,28 +137,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
 
   const currentStudentLevel = studentLevel || (typeof window !== 'undefined' ? (localStorage.getItem('edutech_student_level') as 'مبتدئ' | 'متوسط' | 'متقدم' | null) : null);
 
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('edutech_theme');
-    return saved ? saved === 'dark' : true;
-  });
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const saved = localStorage.getItem('edutech_theme');
-      setIsDarkMode(saved ? saved === 'dark' : true);
-    };
-
-    window.addEventListener('storage', checkTheme);
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      window.removeEventListener('storage', checkTheme);
-      observer.disconnect();
-    };
-  }, []);
+  // Theme handled via html.dark
 
   // أنيميشن الخلفية
   useEffect(() => {
@@ -167,7 +202,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
     { id: 'algorithms', label: 'خوارزميات وهياكل بيانات' },
   ];
 
-  const courses: Course[] = [
+  const defaultCourses: Course[] = [
     {
       id: 'python-core',
       title: 'أساسيات البرمجة بلغة Python',
@@ -589,6 +624,82 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
     }
   ];
 
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCourses = async () => {
+      try {
+        setIsLoadingCourses(true);
+        const res = await apiClient.get('/courses');
+        const rawCourses: any[] = res.data?.courses || res.data?.data || [];
+        if (isMounted) {
+          if (Array.isArray(rawCourses) && rawCourses.length > 0) {
+            const liveCourses: Course[] = rawCourses.map((c: any) => {
+              const rawTopicMap = c.topic_map || c.topics || [];
+              const conceptTree: ConceptNode[] = mapTopicMapToConceptTree(rawTopicMap);
+              const topicArray = Array.isArray(rawTopicMap)
+                ? rawTopicMap
+                : (typeof rawTopicMap === 'object' && rawTopicMap !== null ? Object.values(rawTopicMap) : []);
+              
+              const catLower = (c.category || '').toLowerCase();
+              const iconComponent = catLower.includes('python') || catLower.includes('بايثون')
+                ? Code2 
+                : catLower.includes('ai') || catLower.includes('ذكاء')
+                ? BrainCircuit 
+                : catLower.includes('data') || catLower.includes('بيانات')
+                ? Database 
+                : Network;
+
+              const isPaused = c.status === 'paused';
+              const duration = c.estimated_hours ? `${c.estimated_hours} ساعة تدريبية` : (c.duration || `${Math.max(12, topicArray.length * 4)} ساعة`);
+              const lessonsCount = topicArray.length > 0 ? topicArray.length * 3 : (c.lessons_count || 18);
+              const mainConcepts = topicArray.map((t: any) => t.title || t.name).filter(Boolean);
+
+              return {
+                id: c.id,
+                title: c.title,
+                description: c.description || 'مسار تعليمي تكيفي مخصص في منصة مسار.',
+                category: c.category || 'علوم الحاسب والبرمجة',
+                level: (c.level as any) || 'مبتدئ',
+                duration,
+                lessonsCount,
+                progress: 0,
+                icon: iconComponent,
+                color: '#FFCB74',
+                tag: isPaused 
+                  ? 'متوقف مؤقتاً' 
+                  : c.placement_test_questions_count 
+                  ? `امتحان تكيفي (${c.placement_test_questions_count} أسئلة)` 
+                  : 'مقرر متاح للطلاب',
+                status: c.status || 'active',
+                imageUrl: c.image_url || (catLower.includes('python') || catLower.includes('بايثون')
+                  ? 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=800&q=80'
+                  : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80'),
+                mainConcepts: mainConcepts.length > 0 ? mainConcepts : ['المفاهيم التأسيسية', 'التطبيق العملي', 'التحليل وحل المشكلات'],
+                conceptTree,
+              };
+            });
+
+            // ربط ديناميكي حصري بالمقررات القادمة من قاعدة البيانات السحابية (Firebase)
+            setCourses(liveCourses);
+          } else {
+            // في حالة عدم وجود مقررات بقاعدة البيانات
+            setCourses([]);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch live courses from backend, using fallback:', err);
+        if (isMounted) setCourses(defaultCourses);
+      } finally {
+        if (isMounted) setIsLoadingCourses(false);
+      }
+    };
+    fetchCourses();
+    return () => { isMounted = false; };
+  }, []);
+
   const filteredCourses = courses.filter((c) => {
     const matchesCategory = selectedCategory === 'all' || c.category === selectedCategory;
     const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -626,39 +737,60 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
       {/* المحتوى الرئيسي */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-5 lg:px-10 py-6 z-10">
         
-        {/* عنوان الصفحة وحقل البحث */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-6">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold mb-1.5 bg-[#FFCB74]/20 border border-[#FFCB74]/40 text-[#111111] dark:text-[#FFCB74] shadow-xs">
-              <Sparkles className="w-3 h-3 text-[#FFCB74]" />
-              <span>محتوى تعليمي يتكيف مع تقدمك الفعلي</span>
+        {/* ترويسة الصفحة المنظمة وشريط البحث */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+            <div className="flex items-center gap-3">
+              {onBackToDashboard && (
+                <button
+                  onClick={onBackToDashboard}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2F2F2F] hover:border-[#FFCB74] text-slate-700 dark:text-slate-200 transition-all cursor-pointer whitespace-nowrap shadow-xs hover:shadow-sm shrink-0"
+                  title="العودة للوحة التحكم"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[#FFCB74]" />
+                  <span>العودة للرئيسية</span>
+                </button>
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-black text-[#111111] dark:text-white tracking-tight">
+                    المقررات الدراسية
+                  </h1>
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74] border border-[#FFCB74]/40 font-mono whitespace-nowrap">
+                    {courses.length} مقررات متاحة
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  استكشف مسارات التعلم التكيفية المبنية على شجرة المفاهيم المعتمدة.
+                </p>
+              </div>
             </div>
-            <h1 className="text-xl lg:text-2xl font-black text-[#111111] dark:text-[#FFFFFF]">
-              اختر المقرر وابدأ خطوتك القادمة
-            </h1>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            <div className="relative w-full sm:w-56">
-              <Search className="w-3.5 h-3.5 absolute right-3 top-2.5 text-[#FFCB74]" />
+          {/* شريط البحث وتصنيفات المقررات في حاوية مستقلة ومنسقة */}
+          <div className="bg-white dark:bg-[#1E1E1E] p-2.5 sm:p-3 rounded-2xl border border-slate-200 dark:border-[#2F2F2F] shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            {/* حقل البحث */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 absolute right-3.5 top-2.5 text-[#FFCB74]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن مقرر أو موضوع..."
-                className="w-full rounded-xl pr-9 pl-3 py-1.5 text-xs outline-none transition-all bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] focus:border-[#FFCB74] text-[#111111] dark:text-[#FFFFFF] placeholder-gray-400 shadow-xs"
+                placeholder="ابحث عن مقرر أو موضوع دراسي..."
+                className="w-full rounded-xl pr-10 pl-4 py-2 text-xs outline-none transition-all bg-[#F6F6F6] dark:bg-[#252525] border border-slate-200 dark:border-[#333333] focus:border-[#FFCB74] text-[#111111] dark:text-white placeholder-slate-400"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+            {/* أزرار الفئات والتصنيفات */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat.id
                       ? 'bg-[#FFCB74] text-[#111111] shadow-[0_0_12px_rgba(255,203,116,0.35)] font-black'
-                      : 'bg-white dark:bg-[#2F2F2F] text-gray-600 dark:text-gray-300 hover:text-[#111111] dark:hover:text-white border border-[#2F2F2F]/15 dark:border-[#2F2F2F] shadow-xs'
+                      : 'bg-[#F6F6F6] dark:bg-[#252525] text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-200/80 dark:border-[#333333]'
                   }`}
                 >
                   {cat.label}
@@ -669,7 +801,20 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
         </div>
 
         {/* شبكة كروت المقررات بأبعاد مدمجة وطبيعية */}
+        {isLoadingCourses && (
+          <div className="col-span-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#FFCB74]/15 border border-[#FFCB74]/30 text-xs font-bold text-[#111111] dark:text-[#FFCB74] mb-3">
+            <Loader2 className="w-4 h-4 animate-spin text-[#FFCB74]" />
+            <span>جاري مزامنة شجرة المفاهيم والمقررات من قاعدة البيانات السحابية...</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {!isLoadingCourses && filteredCourses.length === 0 && (
+            <div className="col-span-full text-center py-12 bg-white dark:bg-[#1E1E1E] rounded-2xl border border-slate-200 dark:border-[#2F2F2F] p-8">
+              <BookOpen className="w-12 h-12 text-[#FFCB74] mx-auto mb-3 opacity-60" />
+              <h3 className="text-base font-bold text-[#111111] dark:text-white mb-1">لا توجد مقررات مطابقة</h3>
+              <p className="text-xs text-slate-500">لم يتم العثور على مقررات متاحة في هذا التصنيف أو حسب البحث.</p>
+            </div>
+          )}
           {filteredCourses.map((course) => {
             const Icon = course.icon;
             const hasStarted = course.progress > 0;
@@ -795,11 +940,21 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                       ) : (
                         <>
                           <button
-                            onClick={() => setCourseToStart(course)}
-                            className="col-span-6 py-1.5 px-2 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer bg-[#FFCB74] text-[#111111] shadow-xs hover:scale-[1.02] active:scale-95"
+                            onClick={() => {
+                              if (course.status === 'paused') {
+                                alert('هذا المقرر متوقف مؤقتاً حالياً من قبل إدارة المنصة وسيتاح قريباً للطلاب.');
+                                return;
+                              }
+                              setCourseToStart(course);
+                            }}
+                            className={`col-span-6 py-1.5 px-2 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer shadow-xs ${
+                              course.status === 'paused'
+                                ? 'bg-slate-200 dark:bg-[#252525] text-slate-400 cursor-not-allowed'
+                                : 'bg-[#FFCB74] text-[#111111] hover:scale-[1.02] active:scale-95'
+                            }`}
                           >
                             <Play className="w-3 h-3 fill-current" />
-                            <span>{hasStarted ? 'متابعة' : 'بدء المقرر'}</span>
+                            <span>{course.status === 'paused' ? 'متوقف مؤقتاً' : (hasStarted ? 'متابعة' : 'بدء المقرر')}</span>
                           </button>
 
                           <button
@@ -851,7 +1006,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                 onClick={() => {
                   const id = courseToImprove.id;
                   setCourseToImprove(null);
-                  if (onSelectCourse) onSelectCourse(id, 'direct_lesson');
+                  if (onSelectCourse) onSelectCourse(id, 'direct_lesson', courseToImprove?.title);
                 }}
                 className="py-2.5 px-6 rounded-xl font-black text-xs bg-[#FFCB74] text-[#111111] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
               >
@@ -899,7 +1054,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                 onClick={() => {
                   const id = courseToStart.id;
                   setCourseToStart(null);
-                  if (onSelectCourse) onSelectCourse(id, 'direct_lesson');
+                  if (onSelectCourse) onSelectCourse(id, 'direct_lesson', courseToStart?.title);
                 }}
                 className="p-4 rounded-2xl border border-[#2F2F2F]/20 dark:border-[#2F2F2F] hover:border-[#FFCB74] bg-[#F6F6F6] dark:bg-[#252525] hover:bg-[#FFCB74]/10 transition-all cursor-pointer group flex items-start justify-between gap-3"
               >
@@ -921,7 +1076,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
                 onClick={() => {
                   const id = courseToStart.id;
                   setCourseToStart(null);
-                  if (onSelectCourse) onSelectCourse(id, 'test');
+                  if (onSelectCourse) onSelectCourse(id, 'test', courseToStart?.title);
                 }}
                 className="p-4 rounded-2xl border-2 border-[#FFCB74]/40 hover:border-[#FFCB74] bg-[#FFCB74]/15 hover:bg-[#FFCB74]/25 transition-all cursor-pointer group flex items-start justify-between gap-3 shadow-xs"
               >
@@ -1148,7 +1303,7 @@ export const StudentCourses: React.FC<StudentCoursesProps> = ({
             {/* شريط سفلي مختصر */}
             <div className="px-4 py-1.5 border-t flex items-center justify-between border-[#2F2F2F]/15 dark:border-[#2F2F2F] bg-[#F6F6F6] dark:bg-[#141414] shrink-0 text-[9px] text-gray-500 dark:text-gray-400">
               <span>تسلسل المحطات وفق نمط بلوم المعرفي التكيفي.</span>
-              <span className="text-[#FFCB74] font-bold">إديوتك 2026</span>
+              <span className="text-[#FFCB74] font-bold">مسار 2026</span>
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import {
   Users,
-  Shield,
   Lock,
   CheckCircle2,
   ShieldAlert

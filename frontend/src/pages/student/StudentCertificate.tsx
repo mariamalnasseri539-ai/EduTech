@@ -3,9 +3,7 @@ import {
   Sparkles, 
   X, 
   Printer, 
-  GraduationCap, 
-  Award, 
-  CheckCircle2 
+  GraduationCap 
 } from 'lucide-react';
 
 export interface CertificateData {
@@ -61,7 +59,7 @@ export const StudentCertificate: React.FC<StudentCertificateProps> = ({
             <GraduationCap className="w-9 h-9" />
           </div>
           <span className="text-xs font-bold text-[#FFCB74] tracking-widest uppercase block mb-1">
-            منصة إديوتك للتعلم التكيفي الذكي • EDUTECH PLATFORM
+            منصة مسار للتعلم التكيفي الذكي • MASAR PLATFORM
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-[#111111] dark:text-[#FFFFFF] tracking-wide">
             وثيقة إتقان وإنجاز معتمدة
@@ -71,7 +69,7 @@ export const StudentCertificate: React.FC<StudentCertificateProps> = ({
 
         {/* نص الشهادة وبيانات الطالبة */}
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 font-medium">تشهد منصة إديوتك بأن الطالبة:</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 font-medium">تشهد منصة مسار بأن الطالبة:</p>
           
           <h2 className="text-3xl sm:text-4xl font-black text-[#111111] dark:text-[#FFCB74] my-3 py-1">
             {data.studentName}

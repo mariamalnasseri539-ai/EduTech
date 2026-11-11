@@ -32,26 +32,35 @@ interface StudentDashboardProps {
   studentName?: string;
   onStartJourney?: () => void;
   onNavigateToCourses?: () => void;
+  onBackToWelcome?: () => void;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   studentName = 'هيله سرحان الناصري',
+  onBackToWelcome,
 }) => {
+  void onBackToWelcome;
   const [currentView, setCurrentView] = useState<
     'welcome' | 'courses' | 'test' | 'lesson' | 'achievements' | 'progress' | 'profile' | 'settings'
   >('welcome');
+  const [selectedCourseId, setSelectedCourseId] = useState('python-101');
   const [selectedCourseTitle, setSelectedCourseTitle] = useState('أساسيات البرمجة بلغة Python');
   const [determinedStudentLevel, setDeterminedStudentLevel] = useState<'مبتدئ' | 'متوسط' | 'متقدم'>('مبتدئ');
   const [activeTab, setActiveTab] = useState<'home' | 'courses' | 'achievements' | 'progress' | 'profile' | 'settings'>('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // قراءة المظهر المحفوظ أو استخدام الداكن كافتراضي وتطبيقه على الجذر
+  // قراءة المظهر المحفوظ أو استخدام الفاتح (Light) كافتراضي معتمد وتطبيقه على الجذر
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('edutech_theme');
-    const isDark = saved ? saved === 'dark' : true;
+    const saved = localStorage.getItem('masar_theme') || localStorage.getItem('app-theme') || localStorage.getItem('edutech_theme');
+    const isDark = saved ? saved === 'dark' : false;
     if (typeof document !== 'undefined') {
-      if (isDark) document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      }
     }
     return isDark;
   });
@@ -61,11 +70,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   // دالة تغيير وحفظ المظهر العام فورياً
   const handleToggleTheme = (mode: boolean) => {
     setIsDarkMode(mode);
-    localStorage.setItem('edutech_theme', mode ? 'dark' : 'light');
+    localStorage.setItem('masar_theme', mode ? 'dark' : 'light');
+    localStorage.setItem('app-theme', mode ? 'dark' : 'light');
     if (mode) {
       document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     }
   };
 
@@ -148,6 +160,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   if (currentView === 'test') {
     return (
       <PlacementTest
+        courseId={selectedCourseId}
         courseTitle={selectedCourseTitle}
         onCancel={() => setCurrentView('courses')}
         onFinishTest={(_score, level) => {
@@ -161,6 +174,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   if (currentView === 'lesson') {
     return (
       <AdaptiveLesson
+        courseId={selectedCourseId}
         courseTitle={selectedCourseTitle}
         studentLevel={determinedStudentLevel}
         onBackToDashboard={() => setCurrentView('courses')}
@@ -186,7 +200,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
       {/* السايد بار الموحد لجميع الواجهات */}
       <aside 
-        className={`fixed top-0 right-0 h-full w-72 border-l z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between py-6 px-5 shadow-2xl bg-white dark:bg-[#111111] border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-[#111111] dark:text-[#FFFFFF] ${
+        className={`fixed top-0 right-0 h-screen max-h-screen w-72 border-l z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between py-6 px-5 shadow-2xl bg-white dark:bg-[#111111] border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-[#111111] dark:text-[#FFFFFF] overflow-y-auto overflow-x-hidden ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -195,8 +209,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             <div className="flex items-center gap-3">
               <PlatformLogo size={42} />
               <div>
-                <span className="text-base font-black text-[#111111] dark:text-[#FFCB74] tracking-wider block leading-tight">إديوتك</span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">EDUTECH</span>
+                <span className="text-base font-black text-[#111111] dark:text-[#FFCB74] tracking-wider block leading-tight">مسار</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">MASAR</span>
               </div>
             </div>
             
@@ -235,7 +249,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </div>
 
         <div className="text-[11px] text-center border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F] pt-4 text-gray-500 dark:text-gray-400">
-          منصة إديوتك للتعلم التكيفي الذكي
+          منصة مسار للتعلم التكيفي الذكي
         </div>
       </aside>
 
@@ -260,9 +274,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             <PlatformLogo size={38} />
             <div className="text-right">
               <h2 className="text-sm font-bold leading-tight text-[#111111] dark:text-white">
-                منصة إديوتك الذكية
+                منصة مسار الذكية
               </h2>
-              <p className="text-[11px] text-[#FFCB74] font-medium tracking-wide">EduTech</p>
+              <p className="text-[11px] text-[#FFCB74] font-medium tracking-wide">MASAR</p>
             </div>
           </div>
         </div>
@@ -276,8 +290,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           <StudentCourses 
             studentLevel={determinedStudentLevel}
             onBackToDashboard={() => setCurrentView('welcome')}
-            onSelectCourse={(courseId, startMode) => {
-              setSelectedCourseTitle(courseId);
+            onSelectCourse={(courseId, startMode, courseTitle) => {
+              setSelectedCourseId(courseId);
+              if (courseTitle) setSelectedCourseTitle(courseTitle);
               if (startMode === 'direct_lesson') {
                 setDeterminedStudentLevel('مبتدئ');
                 setCurrentView('lesson');
@@ -462,7 +477,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
       {/* الفوتر */}
       <footer className="w-full py-4 text-center text-xs border-t z-20 backdrop-blur-md transition-colors border-[#2F2F2F]/15 dark:border-[#2F2F2F]/50 bg-white/70 dark:bg-[#111111]/70 text-gray-500 dark:text-gray-400">
-        منصة إديوتك للتعلم التكيفي الذكي • جميع الحقوق محفوظة
+        منصة مسار للتعلم التكيفي الذكي • جميع الحقوق محفوظة
       </footer>
 
     </div>

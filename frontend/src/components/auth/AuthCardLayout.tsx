@@ -1,7 +1,6 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { PlatformLogo } from '../common/PlatformLogo';
-import { ThemeToggle } from '../common/ThemeToggle';
 
 interface AuthCardLayoutProps {
   children: React.ReactNode;
@@ -34,10 +33,10 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
           <div>
             <div className="flex items-center space-x-2 space-x-reverse">
               <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
-                إديوتك
+                مسار
               </span>
               <span className="text-[11px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74] border border-[#FFCB74]/40">
-                EduTech
+                MASAR
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
@@ -45,9 +44,6 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
             </p>
           </div>
         </div>
-
-        {/* Theme Toggle Button (كبس زر لمبة مائي لشمس وقمر) */}
-        <ThemeToggle />
       </header>
 
       {/* Main Centered Card Container */}
@@ -110,7 +106,7 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
 
       {/* Footer */}
       <footer className="w-full py-3 text-center text-[11px] text-slate-400 dark:text-slate-500 shrink-0 z-10">
-        <span>© 2026 إديوتك EduTech. جميع الحقوق محفوظة.</span>
+        <span>© 2026 مسار MASAR. جميع الحقوق محفوظة.</span>
       </footer>
     </div>
   );

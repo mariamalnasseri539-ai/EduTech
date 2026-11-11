@@ -3,13 +3,15 @@ export type AdminSection =
   | 'users'
   | 'cohort'
   | 'courses'
-  | 'telemetry';
+  | 'prompts'
+  | 'telemetry'
+  | 'settings';
 
 export interface AdminNavItem {
   id: AdminSection;
   title: string;
   subtitle: string;
-  iconName: 'overview' | 'users' | 'cohort' | 'courses' | 'telemetry';
+  iconName: 'overview' | 'users' | 'cohort' | 'courses' | 'prompts' | 'telemetry' | 'settings';
   badge?: string;
 }
 
@@ -85,6 +87,7 @@ export interface AdminTopicNode {
   description: string;
   prerequisites: string[];
   targetConcepts: string[];
+  subTopics?: string[];
   category: string;
   order: number;
   bloomLevel: string;
@@ -98,6 +101,8 @@ export interface AdminCourse {
   estimatedHours: number;
   totalStudents: number;
   topicsCount: number;
+  placementTestQuestionsCount?: number;
+  status?: 'active' | 'paused';
   topics: Record<string, AdminTopicNode>;
 }
 
@@ -124,4 +129,30 @@ export interface AiLogEntry {
   status: 'SUCCESS' | 'HEALED' | 'FAILED';
   topicId: string;
   studentId: string;
+}
+
+// Prompt Engineering & Template Types
+export type PromptCategory =
+  | 'placement_test'    // أوامر امتحان تحديد المستوى
+  | 'static_slides'     // أوامر توليد السلايدات الثابتة
+  | 'interactive_code'  // أوامر الكود والواجهات التفاعلية
+  | 'micro_quiz';       // أوامر الامتحان الصغير بعد كل درس
+
+export interface AdminPromptTemplate {
+  id: string;
+  title: string;
+  category: PromptCategory;
+  target_course_id?: string;
+  target_course_title?: string;
+  system_prompt: string;
+  user_prompt_template: string;
+  variables: string[];
+  model: string;
+  temperature: number;
+  max_tokens: number;
+  is_active: boolean;
+  version?: number;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
 }

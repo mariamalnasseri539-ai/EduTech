@@ -1,0 +1,374 @@
+{
+    "courses": {
+        "python-101": {
+            "id": "python-101",
+            "title": "أساسيات البرمجة بلغة Python",
+            "description": "المسار التأسيسي الشامل لتعلم المنطق البرمجي، هياكل البيانات، والخوارزميات بلغة بايثون التكيفية.",
+            "category": "علوم الحاسب والبرمجة",
+            "estimated_hours": 20,
+            "placement_test_questions_count": 20,
+            "topic_map": {
+                "py-variables": {
+                    "id": "py-variables",
+                    "title": "المتغيرات وأنواع البيانات الأساسية",
+                    "description": "مفهوم تخزين البيانات في الذاكرة، الأنواع العددية والنصية والمنطقية والتحويل بينها.",
+                    "prerequisites": [],
+                    "target_concepts": [
+                        "Variables",
+                        "Data Types",
+                        "Type Casting",
+                        "Dynamic Typing"
+                    ],
+                    "category": "المفاهيم التأسيسية",
+                    "order": 1,
+                    "bloom_level": "تذكر وفهم (Remember\/Understand)"
+                },
+                "py-conditionals": {
+                    "id": "py-conditionals",
+                    "title": "الجمل الشرطية والتحكم في التدفق",
+                    "description": "اتخاذ القرارات المنطقية باستخدام if, elif, else والمعاملات المنطقية.",
+                    "prerequisites": [
+                        "py-variables"
+                    ],
+                    "target_concepts": [
+                        "Boolean Logic",
+                        "If-Else Branching",
+                        "Comparison Operators"
+                    ],
+                    "category": "التحكم في المسار",
+                    "order": 2,
+                    "bloom_level": "تطبيق (Apply)"
+                },
+                "py-loops": {
+                    "id": "py-loops",
+                    "title": "الحلقات التكرارية والتكرار المنطقي",
+                    "description": "تكرار المهام بكفاءة باستخدام حلقات for و while والتحكم عبر break و continue.",
+                    "prerequisites": [
+                        "py-conditionals"
+                    ],
+                    "target_concepts": [
+                        "For Loops",
+                        "While Loops",
+                        "Loop Control",
+                        "Range Function"
+                    ],
+                    "category": "التحكم في المسار",
+                    "order": 3,
+                    "bloom_level": "تطبيق وتحليل (Apply\/Analyze)"
+                },
+                "py-data-structures": {
+                    "id": "py-data-structures",
+                    "title": "هياكل البيانات: القوائم والقواميس",
+                    "description": "التعامل مع مجموعات البيانات: Lists, Tuples, Dictionaries, Sets والعمليات عليها.",
+                    "prerequisites": [
+                        "py-loops"
+                    ],
+                    "target_concepts": [
+                        "Lists & Tuples",
+                        "Dictionaries",
+                        "Key-Value Pairs",
+                        "List Slicing"
+                    ],
+                    "category": "هياكل البيانات",
+                    "order": 4,
+                    "bloom_level": "تطبيق وتحليل (Apply\/Analyze)"
+                },
+                "py-functions": {
+                    "id": "py-functions",
+                    "title": "الدوال والبرمجة المعيارية",
+                    "description": "بناء دوال قابلة لإعادة الاستخدام، المعاملات، القيم المرجعة، ونطاقات المتغيرات (Scope).",
+                    "prerequisites": [
+                        "py-data-structures"
+                    ],
+                    "target_concepts": [
+                        "Functions Definition",
+                        "Arguments & Return",
+                        "Scope (LEGB)",
+                        "Modularity"
+                    ],
+                    "category": "المعيارية المتقدمة",
+                    "order": 5,
+                    "bloom_level": "تقييم وابتكار (Evaluate\/Create)"
+                }
+            }
+        },
+        "cs-advanced-js": {
+            "id": "cs-advanced-js",
+            "title": "Advanced JavaScript: Runtime Architecture & Concurrency",
+            "description": "Zero-content adaptive course exploring the V8 runtime, Event Loop, closures, and asynchronous concurrency.",
+            "category": "Computer Science",
+            "estimated_hours": 24,
+            "placement_test_questions_count": 20,
+            "topic_map": {
+                "js-call-stack": {
+                    "id": "js-call-stack",
+                    "title": "The Execution Context & Call Stack",
+                    "description": "Execution contexts, lexical environments, variable hoisting, and stack frame lifecycle.",
+                    "prerequisites": [],
+                    "target_concepts": [
+                        "Execution Context",
+                        "Call Stack",
+                        "Variable Environment",
+                        "Hoisting"
+                    ],
+                    "category": "Runtime Fundamentals",
+                    "order": 1
+                },
+                "js-lexical-scope": {
+                    "id": "js-lexical-scope",
+                    "title": "Lexical Scope & Closures",
+                    "description": "Scope chain resolution, outer environment references, closure memory retention.",
+                    "prerequisites": [
+                        "js-call-stack"
+                    ],
+                    "target_concepts": [
+                        "Scope Chain",
+                        "Lexical Environment",
+                        "Closures",
+                        "Memory Leaks"
+                    ],
+                    "category": "Runtime Fundamentals",
+                    "order": 2
+                },
+                "async-event-loop": {
+                    "id": "async-event-loop",
+                    "title": "Asynchronous Concurrency & The Event Loop",
+                    "description": "Non-blocking I\/O, Web APIs, Macrotasks, Microtask queue ordering, and starvation.",
+                    "prerequisites": [
+                        "js-call-stack",
+                        "js-lexical-scope"
+                    ],
+                    "target_concepts": [
+                        "Event Loop",
+                        "Microtask Queue",
+                        "Macrotask Queue",
+                        "Non-blocking I\/O"
+                    ],
+                    "category": "Concurrency",
+                    "order": 3
+                },
+                "promises-async-await": {
+                    "id": "promises-async-await",
+                    "title": "Promises & Async\/Await Under the Hood",
+                    "description": "Promise state machines, thenable chaining, async\/await coroutine desugaring.",
+                    "prerequisites": [
+                        "async-event-loop"
+                    ],
+                    "target_concepts": [
+                        "Promise State Machine",
+                        "Coroutine Desugaring",
+                        "Error Propagation"
+                    ],
+                    "category": "Concurrency",
+                    "order": 4
+                },
+                "memory-garbage-collection": {
+                    "id": "memory-garbage-collection",
+                    "title": "V8 Memory Management & Garbage Collection",
+                    "description": "Scavenger nursery, Mark-Sweep-Compact, generational hypothesis, heap profiling.",
+                    "prerequisites": [
+                        "js-lexical-scope"
+                    ],
+                    "target_concepts": [
+                        "V8 Heap",
+                        "Mark-Sweep",
+                        "Generational GC",
+                        "Memory Allocation"
+                    ],
+                    "category": "Systems Optimization",
+                    "order": 5
+                }
+            }
+        }
+    },
+    "students": {
+        "mock-student-uid-101": {
+            "determined_level": "متقدم",
+            "last_placement_score": 95,
+            "last_course_id": "python-101",
+            "updated_at": "2026-11-11T17:35:10+00:00"
+        },
+        "": {
+            "id": "",
+            "firebase_uid": "",
+            "email": "",
+            "display_name": "مستخدم Google (مسار)",
+            "role": "STD",
+            "placement_completed": false,
+            "enrolled_courses": [],
+            "preferred_language": "en-US",
+            "created_at": "2026-11-11T17:17:55+00:00",
+            "last_login_at": "2026-11-11T17:17:55+00:00"
+        },
+        "stu_101": {
+            "determined_level": "مبتدئ",
+            "last_placement_score": 0,
+            "last_course_id": "python-101",
+            "updated_at": "2026-11-11T13:29:31+00:00"
+        }
+    },
+    "knowledge_states": {
+        "mock-student-uid-101_cloud-native-dev": {
+            "student_id": "mock-student-uid-101",
+            "course_id": "cloud-native-dev",
+            "cognitive_status": "Mastered",
+            "skill_scores": [],
+            "weakness_points": [],
+            "zpd_topics": [
+                0
+            ],
+            "last_evaluated_at": "2026-11-11T10:22:48+00:00"
+        },
+        "stu_101_python-101": {
+            "student_id": "stu_101",
+            "course_id": "python-101",
+            "cognitive_status": "GuidedReview",
+            "skill_scores": [],
+            "weakness_points": [],
+            "zpd_topics": [
+                "py-variables"
+            ],
+            "last_evaluated_at": "2026-11-11T13:29:31+00:00"
+        },
+        "mock-student-uid-101_python-101": {
+            "student_id": "mock-student-uid-101",
+            "course_id": "python-101",
+            "cognitive_status": "Mastered",
+            "skill_scores": [],
+            "weakness_points": [],
+            "zpd_topics": [
+                "py-variables"
+            ],
+            "last_evaluated_at": "2026-11-11T17:35:10+00:00"
+        }
+    },
+    "placement_results": {
+        "mock-student-uid-101_cloud-native-dev": {
+            "student_id": "mock-student-uid-101",
+            "course_id": "cloud-native-dev",
+            "test_id": "pt_87a69c2d87bd",
+            "score_percentage": 100,
+            "correct_count": 4,
+            "total_questions": 4,
+            "determined_level": "متقدم",
+            "xp_earned": 170,
+            "assessed_at": "2026-11-11T10:22:48+00:00"
+        },
+        "stu_101_python-101": {
+            "student_id": "stu_101",
+            "course_id": "python-101",
+            "test_id": "pt_093997243048",
+            "score_percentage": 0,
+            "correct_count": 0,
+            "total_questions": 20,
+            "determined_level": "مبتدئ",
+            "xp_earned": 50,
+            "assessed_at": "2026-11-11T13:29:31+00:00"
+        },
+        "mock-student-uid-101_python-101": {
+            "student_id": "mock-student-uid-101",
+            "course_id": "python-101",
+            "test_id": "pt_645f6f5aaef4",
+            "score_percentage": 95,
+            "correct_count": 19,
+            "total_questions": 20,
+            "determined_level": "متقدم",
+            "xp_earned": 620,
+            "assessed_at": "2026-11-11T17:35:10+00:00"
+        }
+    },
+    "prompt_templates": {
+        "prompt-placement-default": {
+            "id": "prompt-placement-default",
+            "title": "أمر توليد امتحان تحديد المستوى التكيفي القياسي",
+            "category": "placement_test",
+            "target_course_id": "all",
+            "target_course_title": "عام لكافة المقررات",
+            "system_prompt": "أنت خبير بيداغوجي ومصمم اختبارات تشخيصية تكيفية ذكية (Adaptive Diagnostic Assessment Expert). مهمتك هي صياغة أسئلة تقييم دقيقة لتحديد مستوى الطالب المعرفي بدقة (مبتدئ، متوسط، متقدم) في المقرر الدراسي المحدد وفق مستويات هرم بلوم المعرفي. يجب أن تكون الخيارات محكمة، والتغذية الراجعة التفسيرية واضحة ومقنعة.",
+            "user_prompt_template": "قم بإنشاء اختبار تحديد مستوى لمقرر \"{course_title}\".\nعدد الأسئلة المطلوب: {question_count} أسئلة.\nالمفاهيم المحورية للمنهج:\n{concept_topics}\n\nتوزيع الصعوبة المطلوب:\n- 35% أسئلة تأسيسية (مستوى سهل \/ تذكر وفهم)\n- 40% أسئلة تطبيقية (مستوى متوسط \/ تطبيق وممارسة وتحليل)\n- 25% أسئلة متقدمة (مستوى متقدم \/ تقييم وابتكار وحل مشكلات غير مألوفة)\n\nلكل سؤال:\n1. نص السؤال بلغة عربية برمجية سليمة\n2. 4 خيارات حصرية مع تحديد الخيار الصحيح بدقة\n3. شروحات تفسيرية لكل خيار (لماذا هو صحيح أو خطأ)\n4. المفاهيم الفرعية المستهدفة في شجرة المقرر.",
+            "variables": [
+                "course_title",
+                "question_count",
+                "concept_topics"
+            ],
+            "model": "gemini-1.5-pro",
+            "temperature": 0.25,
+            "max_tokens": 4096,
+            "is_active": true,
+            "notes": "البرومبت الأساسي لتوليد اختبارات تحديد المستوى لكل طالب مع الحفاظ على معيار الصعوبة ومستويات بلوم.",
+            "created_at": "2026-11-11T11:31:15+00:00",
+            "updated_at": "2026-11-11T11:31:15+00:00",
+            "version": 1
+        },
+        "prompt-slides-default": {
+            "id": "prompt-slides-default",
+            "title": "أمر صياغة السلايدات والشروحات التعليمية التفاعلية",
+            "category": "static_slides",
+            "target_course_id": "all",
+            "target_course_title": "عام لكافة المقررات",
+            "system_prompt": "أنت كبير مهندسي التصميم التعليمي التفاعلي وخبير البيداغوجيا الرقمية في منصة مسار (MASAR). مهمتك هي توليد شرائح تعليمية ذكية، احترافية، وعالية التباين مخصصة لواجهة الطالب التكيفية.\n\nيجب عليك الالتزام الصارم بالإلزاميات الهندسية والبيداغوجية الأربعة التالية:\n\n1. قاعدة الألوان الصلبة الصارمة (Solid Colors Only - No Transparency):\n   - يُمنع منعاً باتاً استخدام الألوان الشفافة أو الباهتة (ممنوع منعاً باتاً: Opacity, Alpha, Transparent, Faint backgrounds).\n   - استخدام ألوان صلبة نقية (100% Solid Colors) ذات تباين عالي لضمان وضوح فائق وقراءة مريحة:\n     * الخلفيات: أبيض صلب (#FFFFFF) أو رمادي داكن صلب (#1E1E1E \/ #121212).\n     * ألوان التمييز والتأكيد: ذهبي مسار الصلب (#FFCB74)، زمردي صلب (#10B981)، أزرق صلب (#2563EB)، قرمزي صلب (#DC2626).\n     * النصوص: أسود صلب (#111111) على الخلفيات الفاتحة، أو أبيض صلب (#FFFFFF) على الخلفيات الداكنة.\n\n2. هيكلة التعاريف (Terms & Definitions Architecture):\n   - إذا كان المحتوى يتضمن مصطلحات ومفاهيم تعريفية، يجب تقسيمه بدقة:\n     * يُعرض 'اسم المصطلح' وجوباً باللغتين العربية والإنجليزية معاً بصيغة:\n       [اسم المصطلح بالعربية] | [Term in English]\n     * يُتبع اسم المصطلح بمكون تفاعلي قابل للطي والإسدال (Accordion \/ Dropdown Arrow).\n     * عند الضغط على السهم المنسدل، يُسدل 'التعريف والشرح التفصيلي' باللغة العربية فقط (يمنع استخدام الإنجليزية داخل نص التعريف).\n\n3. هيكلة القوائم والنقاط (Lists & Bulleted Points Architecture):\n   - إذا كان المحتوى تعداداً نقطياً أو عناصر تسلسلية:\n     * تُعرض 'النقطة الرئيسية' وجوباً باللغتين العربية والإنجليزية معاً بصيغة:\n       [النقطة الرئيسية بالعربية] | [Main Concept in English]\n     * تكون كل نقطة رئيسية مزودة بسهم منسدل قابل للتوسيع (Dropdown Arrow).\n     * عند الإسدال، تُعرض 'النقاط الفرعية والتفاصيل التوضيحية' باللغة العربية فقط (يمنع وضع نصوص إنجليزية في التفاصيل المنسدلة).\n\n4. المحتوى التفاعلي والأنيميشن (Interactive UI & Animations):\n   - أي محتوى تعليمي، هندسي، أو تطبيقي لا يندرج تحت التعاريف أو القوائم (مثل: آليات العمل، محاكاة الذاكرة، خطوات الخوارزميات، تتبع الكود البرمجي، وتجنب الأخطاء):\n     * يجب تحويله وجوباً إلى واجهات تفاعلية مرئية (Interactive UI Components).\n     * يجب تزويده بحركات وتأثيرات تفاعلية حية (CSS Animations & Micro-interactions) مثل: كبسولات تفكيك المفهوم، مؤشرات التنفيذ الرادارية، ومحاكاة الذاكرة الحية لكسر الملل تماماً وتحفيز الطالب.",
+            "user_prompt_template": "قم بتوليد حزمة شرائح تعليمية تفاعلية بصرية عالية التباين لشرح المفهوم: \"{concept_title}\" ضمن مقرر \"{course_title}\".\nالمستوى المعرفي للطالب: {student_level}.\nالعناوين الفرعية والمخرجات المستهدفة:\n{target_concepts}\n\nالمواصفات الإلزامية للمخرجات:\n1. شريحة المصطلحات والتعاريف: عرض اسم المصطلح بالعربية والإنجليزية (عربي | English) متبوعاً بمكون منسدل (Accordion) يفتح التعريف بالعربية فقط.\n2. شريحة النقاط والقواعد: عرض النقاط الرئيسية بالعربية والإنجليزية (عربي | English) مع سهم منسدل يعرض التفاصيل بالعربية فقط.\n3. شريحة المحاكاة والتفاعل الحي: واجهة تفاعلية بأنيميشن جذاب تشرح آلية عمل المفهوم وتوزيعه بالذاكرة أو تتبع الكود بألوان صلبة (Solid Colors).\n4. شريحة التحصين ومقارنة الأكواد: مقارنة بصرية مزدوجة بين الممارسة الخاطئة والممارسة الصحيحة المعتمدة بألوان صلبة ودون شفافية.",
+            "variables": [
+                "course_title",
+                "concept_title",
+                "student_level",
+                "target_concepts",
+                "slide_count"
+            ],
+            "model": "gemini-1.5-pro",
+            "temperature": 0.35,
+            "max_tokens": 4096,
+            "is_active": true,
+            "notes": "أمر متطور ومحدث: يفرض ألواناً صلبة (Solid Colors)، وهيكلة التعاريف ثنائية اللغة مع Accordion بالعربية فقط، وهيكلة النقاط مع سهم منسدل، والواجهات التفاعلية بأنيميشن جذاب.",
+            "created_at": "2026-11-11T16:42:48+00:00",
+            "updated_at": "2026-11-11T16:42:48+00:00",
+            "version": 1
+        },
+        "prompt-code-default": {
+            "id": "prompt-code-default",
+            "title": "أمر التحديات البرمجية والمحرر التفاعلي الحي",
+            "category": "interactive_code",
+            "target_course_id": "all",
+            "target_course_title": "عام لكافة المقررات",
+            "system_prompt": "أنت مهندس برمجيات ومختبر جودة كود وخبير في بيئات التعلم التفاعلية (Interactive Code Engine & Automated Grader). تقوم بتوليد تحديات برمجية واقعية مع شفرة بداية (Boilerplate) وحالات اختبار (Test Cases) تغطي الحالات الطبيعية والحدية (Edge Cases).",
+            "user_prompt_template": "قم بإنشاء تحدي برمجي تطبيقي للمفهوم: \"{concept_title}\" بلغة \"{programming_language}\".\nمستوى الطالب المستهدف: {student_level}.\nالعنوان الفرعي المطبق: {subtopic_title}.\n\nالمخرجات المطلوبة:\n1. نص التحدي: وصف واضح للمشكلة الحياتية أو البرمجية والمخرجات المتوقعة.\n2. الشفرة التأسيسية المبدئية (Starter Code): مع تعليقات TODO توجه الطالب.\n3. الحل النموذجي المرجعي (Reference Solution).\n4. حالات الاختبار الآلية (Test Cases):\n   - حالتان معلنتان للطالب (Public Test Cases)\n   - حالتان مخفيتان لتقييم الحالات الحدية (Hidden Edge Cases).\n5. تلميحات ذكية متدرجة الصعوبة (Hints).",
+            "variables": [
+                "concept_title",
+                "programming_language",
+                "student_level",
+                "subtopic_title"
+            ],
+            "model": "gemini-1.5-pro",
+            "temperature": 0.2,
+            "max_tokens": 4096,
+            "is_active": true,
+            "version": 1,
+            "notes": "يُستخدم لتوليد بيئة الاختبار والتنفيذ المباشر داخل محرك الكود التفاعلي.",
+            "created_at": "2026-11-11T11:19:40+00:00",
+            "updated_at": "2026-11-11T11:19:40+00:00"
+        },
+        "prompt-quiz-default": {
+            "id": "prompt-quiz-default",
+            "title": "أمر الامتحان الصغير السريع بعد نهاية الدرس (Micro-Quiz)",
+            "category": "micro_quiz",
+            "target_course_id": "all",
+            "target_course_title": "عام لكافة المقررات",
+            "system_prompt": "أنت خبير قياس وتقويم تكويني سريع (Formative Check & Micro-Assessment). هدفك التحقق الفوري من استيعاب الطالب لأهم مخرجات الدرس قبل السماح له بالانتقال للدرس التالي في شجرة المفاهيم.",
+            "user_prompt_template": "قم بصياغة اختبار قصير ومكثف (Micro-Quiz) للدرس: \"{lesson_title}\" في مفهوم \"{concept_title}\".\nعدد الأسئلة: {quiz_questions_count} أسئلة سريعة (من 2 إلى 4 أسئلة).\nالمخرجات التعليمية التي تم شرحها:\n{learned_outcomes}\n\nالمواصفات:\n- الأسئلة تركز على المفاهيم الجوهرية وتطبيق الشفرة البرمجية وتوقع المخرجات (Predict Output).\n- كل سؤال يتضمن 4 خيارات واضحة مع إجابة نموذجية واحدة صحيحة.\n- تغذية راجعة فورية ومباشرة تشرح سبب صحة الإجابة أو سبب الخطأ لتثبيت المعرفة.",
+            "variables": [
+                "lesson_title",
+                "concept_title",
+                "quiz_questions_count",
+                "learned_outcomes"
+            ],
+            "model": "gemini-1.5-flash",
+            "temperature": 0.3,
+            "max_tokens": 2048,
+            "is_active": true,
+            "version": 1,
+            "notes": "الامتحان الصغير التكويني الذي يقدم فور انتهاء سلايدات الدرس لتأكيد الاستيعاب.",
+            "created_at": "2026-11-11T11:19:40+00:00",
+            "updated_at": "2026-11-11T11:19:40+00:00"
+        }
+    }
+}

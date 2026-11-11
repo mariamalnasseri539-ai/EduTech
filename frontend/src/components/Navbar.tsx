@@ -3,7 +3,6 @@ import { Sparkles, Network, BarChart3, BookOpen, LogOut } from 'lucide-react';
 import { CognitiveStatus } from '../types/knowledge';
 import { useAuth } from '../context/AuthContext';
 import { PlatformLogo } from './common/PlatformLogo';
-import { ThemeToggle } from './common/ThemeToggle';
 
 interface NavbarProps {
   activeTab: 'lesson' | 'topic-map' | 'admin';
@@ -59,10 +58,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center space-x-2 space-x-reverse">
               <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
-                إديوتك
+                مسار
               </span>
               <span className="text-xs uppercase font-bold px-2 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74] border border-[#FFCB74]/40 font-mono">
-                EduTech
+                MASAR
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
@@ -125,9 +124,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{getStatusText(cognitiveStatus)}</span>
             </div>
           )}
-
-          {/* Theme Toggle Capsule Button (كبس زر لمبة مائي) */}
-          <ThemeToggle />
 
           {/* User Avatar & Logout */}
           <div className="flex items-center space-x-2 space-x-reverse pr-2 border-r border-slate-200 dark:border-[#333333]">

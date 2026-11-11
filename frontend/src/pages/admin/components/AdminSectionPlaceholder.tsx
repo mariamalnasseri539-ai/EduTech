@@ -83,6 +83,20 @@ export const AdminSectionPlaceholder: React.FC<AdminSectionPlaceholderProps> = (
           ],
           icon: <BookOpen className="w-8 h-8 text-[#FFCB74]" />,
         };
+      case 'prompts':
+        return {
+          title: 'إدارة الأوامر والبرومبت',
+          enTitle: 'AI Prompt Engineering & Templates',
+          description:
+            'إدارة قوالب البرومبت لنماذج الذكاء الاصطناعي عبر أربعة أقسام رئيسية وحفظها في Cloud Firestore.',
+          features: [
+            'أوامر امتحان تحديد المستوى لكل المقررات',
+            'أوامر توليد السلايدات والشروحات الثابتة',
+            'أوامر الكود والواجهات التفاعلية',
+            'أوامر الامتحان الصغير بعد كل درس',
+          ],
+          icon: <Cpu className="w-8 h-8 text-[#FFCB74]" />,
+        };
       case 'telemetry':
         return {
           title: 'مراقبة أداء الذكاء الاصطناعي',
@@ -95,6 +109,14 @@ export const AdminSectionPlaceholder: React.FC<AdminSectionPlaceholderProps> = (
             'سجل عمليات الاستشفاء والتعافي الذاتي (Self-Healing Retries)',
             'مؤشر ضمان المحتوى الصفري (Zero-Content Architecture Compliance)',
           ],
+          icon: <Cpu className="w-8 h-8 text-[#FFCB74]" />,
+        };
+      default:
+        return {
+          title: 'لوحة الإدارة',
+          enTitle: 'Admin Portal',
+          description: 'القسم قيد الإعداد والتطوير.',
+          features: [],
           icon: <Cpu className="w-8 h-8 text-[#FFCB74]" />,
         };
     }

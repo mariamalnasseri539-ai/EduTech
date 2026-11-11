@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, 
   Moon, 
   Sun, 
   Volume2, 
@@ -40,11 +39,15 @@ export const StudentSettings: React.FC<StudentSettingsProps> = ({
   // تبديل وتطبيق المظهر العام فورياً
   const handleThemeChange = () => {
     const nextMode = !isDarkMode;
+    localStorage.setItem('masar_theme', nextMode ? 'dark' : 'light');
+    localStorage.setItem('app-theme', nextMode ? 'dark' : 'light');
     localStorage.setItem('edutech_theme', nextMode ? 'dark' : 'light');
     if (nextMode) {
       document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     }
     if (onToggleTheme) {
       onToggleTheme(nextMode);
@@ -54,9 +57,9 @@ export const StudentSettings: React.FC<StudentSettingsProps> = ({
   const handleTestVoice = () => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const testText = voiceGender === 'female' 
-        ? 'أهلاً بكِ هيله! أنا المساعد الذكي، سأقوم بشرح الدروس التكيفية بهذه النبرة والسرعة.' 
-        : 'أهلاً بكِ هيله! أنا مرشدك الذكي، وسأرافقك في مسار تعلم البرمجة التكيفي.';
+      const testText = voiceGender === 'female'
+        ? `أهلاً بكِ ${studentName}! أنا المساعدة الذكية، سأقوم بشرح الدروس التكيفية بهذه النبرة والسرعة.`
+        : `أهلاً بك يا ${studentName}! أنا مرشدك الذكي، وسأرافقك في مسار تعلم البرمجة التكيفي.`;
       
       const utterance = new SpeechSynthesisUtterance(testText);
       utterance.lang = 'ar-SA';
@@ -74,6 +77,8 @@ export const StudentSettings: React.FC<StudentSettingsProps> = ({
   };
 
   const handleSaveAll = () => {
+    localStorage.setItem('masar_theme', isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('app-theme', isDarkMode ? 'dark' : 'light');
     localStorage.setItem('edutech_theme', isDarkMode ? 'dark' : 'light');
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 3000);
@@ -393,7 +398,7 @@ export const StudentSettings: React.FC<StudentSettingsProps> = ({
 
             <button
               onClick={() => {
-                if (window.confirm('هل أنتِ متأكدة من رغبتك في تسجيل الخروج من منصة إديوتك؟')) {
+                if (window.confirm('هل أنتِ متأكدة من رغبتك في تسجيل الخروج من منصة مسار؟')) {
                   if (onLogout) onLogout();
                   else if (onBackToDashboard) onBackToDashboard();
                 }

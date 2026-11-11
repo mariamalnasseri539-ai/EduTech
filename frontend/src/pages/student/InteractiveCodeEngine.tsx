@@ -51,7 +51,7 @@ export const InteractiveCodeEngine: React.FC<InteractiveCodeEngineProps> = ({
   // نمط الكبسولات الطائرة (Tap to Fly)
   const [flyingChip, setFlyingChip] = useState<string | null>(null);
   const [isChipSuccess, setIsChipSuccess] = useState(false);
-  const [isChipError, setIsChipError] = useState(false);
+  const [, setIsChipError] = useState(false);
 
   // نمط الأسئلة النصية وتتبع الكود (MCQ)
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -399,6 +399,78 @@ export const InteractiveCodeEngine: React.FC<InteractiveCodeEngineProps> = ({
         </div>
       )}
 
+      {/* ================= النمط التلقائي / الاحتياطي في حال عدم تطابق النوع ================= */}
+      {!['code_slot', 'tap_chips', 'theory_mcq', 'code_tracing'].includes(challenge.type as any) && (
+        <div className="w-full bg-[#161616] border border-[#2F2F2F] rounded-3xl p-6 sm:p-7 text-white font-sans shadow-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="p-2 rounded-xl bg-[#FFCB74]/20 text-[#FFCB74] border border-[#FFCB74]/30">
+              <Sparkles className="w-4 h-4" />
+            </span>
+            <span className="text-xs font-bold text-[#FFCB74]">تحدي المفهوم البرمجي التكيفي</span>
+          </div>
+
+          <h3 className="text-base sm:text-lg font-black mb-4 leading-relaxed text-white">
+            {challenge.questionText || (challenge as any).title || (challenge as any).scenario || 'تطبيق عملي للتحقق من إتقان المفهوم:'}
+          </h3>
+
+          {((challenge as any).starterSnippet || challenge.codeSnippet) && (
+            <div className="mb-5 rounded-2xl border border-white/10 bg-[#0E0E0E] p-4 font-mono text-xs leading-relaxed" dir="ltr">
+              <pre className="text-[#FFCB74] whitespace-pre-wrap">{(challenge as any).starterSnippet || challenge.codeSnippet}</pre>
+            </div>
+          )}
+
+          <div className="space-y-2.5 mb-5">
+            {(challenge.options || ['التطبيق المعياري المباشر وتثبيت المفهوم', 'تجاهل الأخطاء التشغيلية', 'إعادة التعيين بدون حفظ']).map((opt, idx) => {
+              const isSelected = selectedOption === idx;
+              let btnStyle = 'bg-black/30 border-white/10 hover:border-[#FFCB74] text-gray-200';
+
+              if (isAnswerConfirmed) {
+                if (idx === (challenge.correctAnswerIndex ?? 0)) {
+                  btnStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold';
+                } else if (isSelected) {
+                  btnStyle = 'bg-red-500/20 border-red-500 text-red-400 font-bold';
+                }
+              } else if (isSelected) {
+                btnStyle = 'bg-[#FFCB74]/20 border-[#FFCB74] text-white ring-1 ring-[#FFCB74] font-bold';
+              }
+
+              return (
+                <button
+                  key={idx}
+                  disabled={isAnswerConfirmed}
+                  onClick={() => setSelectedOption(idx)}
+                  className={`w-full text-right p-3.5 rounded-2xl border text-xs sm:text-sm transition-all duration-300 flex items-center justify-between cursor-pointer ${btnStyle}`}
+                >
+                  <span>{opt}</span>
+                  {isAnswerConfirmed && idx === (challenge.correctAnswerIndex ?? 0) && (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {!isAnswerConfirmed ? (
+            <div className="flex justify-end">
+              <button
+                disabled={selectedOption === null}
+                onClick={() => {
+                  setIsAnswerConfirmed(true);
+                  onComplete();
+                }}
+                className="py-2.5 px-7 rounded-xl font-black text-xs bg-[#FFCB74] text-[#111111] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                تأكيد الإجابة
+              </button>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 leading-relaxed">
+              💡 <strong>الشرح والتوضيح:</strong> {challenge.explanation || 'تم التحقق من إتقانك لهذا التحدي بنجاح (+25 XP).'}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ================= النمط الرابع: تتبع الأسطر البرمجية والمخرجات ================= */}
       {challenge.type === 'code_tracing' && (
         <div className="w-full bg-[#161616] border border-[#2F2F2F] rounded-3xl p-6 sm:p-7 text-white font-sans shadow-2xl">
@@ -463,6 +535,78 @@ export const InteractiveCodeEngine: React.FC<InteractiveCodeEngineProps> = ({
           ) : (
             <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 leading-relaxed">
               💡 <strong>الشرح والتوضيح:</strong> {challenge.explanation}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ================= النمط التلقائي / الاحتياطي في حال عدم تطابق النوع ================= */}
+      {!['code_slot', 'tap_chips', 'theory_mcq', 'code_tracing'].includes(challenge.type as any) && (
+        <div className="w-full bg-[#161616] border border-[#2F2F2F] rounded-3xl p-6 sm:p-7 text-white font-sans shadow-2xl">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="p-2 rounded-xl bg-[#FFCB74]/20 text-[#FFCB74] border border-[#FFCB74]/30">
+              <Sparkles className="w-4 h-4" />
+            </span>
+            <span className="text-xs font-bold text-[#FFCB74]">تحدي المفهوم البرمجي التكيفي</span>
+          </div>
+
+          <h3 className="text-base sm:text-lg font-black mb-4 leading-relaxed text-white">
+            {challenge.questionText || (challenge as any).title || (challenge as any).scenario || 'تطبيق عملي للتحقق من إتقان المفهوم:'}
+          </h3>
+
+          {((challenge as any).starterSnippet || challenge.codeSnippet) && (
+            <div className="mb-5 rounded-2xl border border-white/10 bg-[#0E0E0E] p-4 font-mono text-xs leading-relaxed" dir="ltr">
+              <pre className="text-[#FFCB74] whitespace-pre-wrap">{(challenge as any).starterSnippet || challenge.codeSnippet}</pre>
+            </div>
+          )}
+
+          <div className="space-y-2.5 mb-5">
+            {(challenge.options || ['التطبيق المعياري المباشر وتثبيت المفهوم', 'تجاهل الأخطاء التشغيلية', 'إعادة التعيين بدون حفظ']).map((opt, idx) => {
+              const isSelected = selectedOption === idx;
+              let btnStyle = 'bg-black/30 border-white/10 hover:border-[#FFCB74] text-gray-200';
+
+              if (isAnswerConfirmed) {
+                if (idx === (challenge.correctAnswerIndex ?? 0)) {
+                  btnStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold';
+                } else if (isSelected) {
+                  btnStyle = 'bg-red-500/20 border-red-500 text-red-400 font-bold';
+                }
+              } else if (isSelected) {
+                btnStyle = 'bg-[#FFCB74]/20 border-[#FFCB74] text-white ring-1 ring-[#FFCB74] font-bold';
+              }
+
+              return (
+                <button
+                  key={idx}
+                  disabled={isAnswerConfirmed}
+                  onClick={() => setSelectedOption(idx)}
+                  className={`w-full text-right p-3.5 rounded-2xl border text-xs sm:text-sm transition-all duration-300 flex items-center justify-between cursor-pointer ${btnStyle}`}
+                >
+                  <span>{opt}</span>
+                  {isAnswerConfirmed && idx === (challenge.correctAnswerIndex ?? 0) && (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {!isAnswerConfirmed ? (
+            <div className="flex justify-end">
+              <button
+                disabled={selectedOption === null}
+                onClick={() => {
+                  setIsAnswerConfirmed(true);
+                  onComplete();
+                }}
+                className="py-2.5 px-7 rounded-xl font-black text-xs bg-[#FFCB74] text-[#111111] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                تأكيد الإجابة
+              </button>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 leading-relaxed">
+              💡 <strong>الشرح والتوضيح:</strong> {challenge.explanation || 'تم التحقق من إتقانك لهذا التحدي بنجاح (+25 XP).'}
             </div>
           )}
         </div>

@@ -158,7 +158,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   return (
     <AuthCardLayout
       title="إنشاء حساب جديد"
-      subtitle="انضم إلى منصة إديوتك وابدأ مسارك التعليمي التفاعلي"
+      subtitle="انضم إلى منصة مسار وابدأ مسارك التعليمي التفاعلي"
       activeTab="register"
       onTabChange={(tab) => {
         if (tab === 'login') onNavigateToLogin();
@@ -358,7 +358,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 className="h-4 w-4 rounded-md border-slate-300 dark:border-[#3d3d3d] text-[#FFCB74] focus:ring-[#FFCB74] bg-white dark:bg-[#262626] mt-0.5 cursor-pointer"
               />
               <span className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight">
-                أوافق على <span className="text-[#FFCB74] underline">شروط الاستخدام</span> و <span className="text-[#FFCB74] underline">سياسة الخصوصية</span> لمنصة إديوتك.
+                أوافق على <span className="text-[#FFCB74] underline">شروط الاستخدام</span> و <span className="text-[#FFCB74] underline">سياسة الخصوصية</span> لمنصة مسار.
               </span>
             </label>
           </div>

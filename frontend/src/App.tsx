@@ -24,8 +24,8 @@ const MainAppContent: React.FC = () => {
   if (showSplash || isAuthLoading) {
     return (
       <LoadingScreen
-        message="مرحباً بك في منصة إديوتك..."
-        subMessage="إديوتك • بوابتك نحو التعلّم التفاعلي والذكي"
+        message="مرحباً بك في منصة مسار..."
+        subMessage="مسار • بوابتك نحو التعلّم التفاعلي والذكي"
       />
     );
   }

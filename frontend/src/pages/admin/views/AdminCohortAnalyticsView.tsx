@@ -8,7 +8,6 @@ import {
   Sparkles,
   BarChart3,
   Award,
-  Layers,
   ArrowUpRight,
   Lightbulb
 } from 'lucide-react';

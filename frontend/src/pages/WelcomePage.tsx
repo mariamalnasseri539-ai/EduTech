@@ -12,41 +12,11 @@ export const WelcomePage: React.FC = () => {
   const displayName = userProfile?.display_name || userProfile?.email || 'User';
 
   if (currentView === 'admin') {
-    return (
-      <div className="min-h-screen bg-white dark:bg-[#111111]">
-        <div className="p-4 border-b flex justify-between items-center">
-          <button
-            onClick={() => setCurrentView('welcome')}
-            className="text-xs text-blue-600 hover:underline"
-          >
-            ← العودة للرئيسية
-          </button>
-          <button onClick={logout} className="text-xs text-red-500 hover:underline">
-            تسجيل الخروج
-          </button>
-        </div>
-        <AdminDashboard />
-      </div>
-    );
+    return <AdminDashboard onBackToWelcome={() => setCurrentView('welcome')} />;
   }
 
   if (currentView === 'student') {
-    return (
-      <div className="min-h-screen bg-white dark:bg-[#111111]">
-        <div className="p-4 border-b flex justify-between items-center">
-          <button
-            onClick={() => setCurrentView('welcome')}
-            className="text-xs text-blue-600 hover:underline"
-          >
-            ← العودة للرئيسية
-          </button>
-          <button onClick={logout} className="text-xs text-red-500 hover:underline">
-            تسجيل الخروج
-          </button>
-        </div>
-        <StudentDashboard />
-      </div>
-    );
+    return <StudentDashboard onBackToWelcome={() => setCurrentView('welcome')} />;
   }
 
   return (

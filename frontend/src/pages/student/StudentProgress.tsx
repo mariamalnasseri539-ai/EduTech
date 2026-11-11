@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { 
-  TrendingUp, 
   Brain, 
   CheckCircle2, 
   AlertTriangle, 
   Sparkles, 
   Target, 
-  BookOpen, 
-  Zap, 
   BarChart3,
   Clock,
   Layers
@@ -28,31 +25,11 @@ interface StudentProgressProps {
 export const StudentProgress: React.FC<StudentProgressProps> = ({
   studentName = 'هيله سرحان الناصري',
 }) => {
+  void studentName;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // قراءة ومراقبة مظهر المنصة العام (Dark / Light)
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('edutech_theme');
-    return saved ? saved === 'dark' : true;
-  });
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const saved = localStorage.getItem('edutech_theme');
-      setIsDarkMode(saved ? saved === 'dark' : true);
-    };
-
-    window.addEventListener('storage', checkTheme);
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      window.removeEventListener('storage', checkTheme);
-      observer.disconnect();
-    };
-  }, []);
+  // Theme handled globally
 
   // بيانات الحالة المعرفية ومؤشرات التمكن
   const progressOverview = {

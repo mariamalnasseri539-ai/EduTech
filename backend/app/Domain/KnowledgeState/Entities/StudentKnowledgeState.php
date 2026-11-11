@@ -164,7 +164,9 @@ final class StudentKnowledgeState
         $zpd = [];
 
         foreach ($syllabusTopicMap as $topicIdStr => $topicMeta) {
-            $currentScore = $this->topicScores[$topicIdStr]?->getScore() ?? 0.0;
+            $currentScore = isset($this->topicScores[$topicIdStr])
+                ? $this->topicScores[$topicIdStr]->getScore()
+                : 0.0;
 
             // If already mastered, it is beyond the proximal development boundary
             if ($currentScore >= 0.85) {
@@ -176,7 +178,9 @@ final class StudentKnowledgeState
             $prereqsMet = true;
 
             foreach ($prereqs as $prereqId) {
-                $prereqScore = $this->topicScores[$prereqId]?->getScore() ?? 0.0;
+                $prereqScore = isset($this->topicScores[$prereqId])
+                    ? $this->topicScores[$prereqId]->getScore()
+                    : 0.0;
                 if ($prereqScore < 0.70) {
                     $prereqsMet = false;
                     break;
@@ -202,7 +206,7 @@ final class StudentKnowledgeState
     }
 
     /**
-     * Serializes to Firestore representation.
+     * Serializes entity into Firestore compatible associative array.
      *
      * @return array<string, mixed>
      */

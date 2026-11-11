@@ -40,7 +40,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[#FFCB74]/20 text-[#2F2F2F] dark:text-[#FFCB74] border border-[#FFCB74]/40 font-mono">
-              EDUTECH ANALYTICS HUB
+              MASAR ANALYTICS HUB
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200/80">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
@@ -117,7 +117,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ onNavigate
         </div>
         <div className="flex items-center gap-1.5 shrink-0 font-mono text-[11px] text-[#2F2F2F] dark:text-[#FFCB74]">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>EduTech System Healthy</span>
+          <span>MASAR System Healthy</span>
         </div>
       </div>
     </div>

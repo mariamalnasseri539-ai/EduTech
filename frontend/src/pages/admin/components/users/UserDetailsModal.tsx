@@ -8,10 +8,8 @@ import {
   Phone,
   Mail,
   BookOpen,
-  Award,
   CheckCircle2,
-  Lock,
-  Layers
+  Lock
 } from 'lucide-react';
 import { AdminUser } from '../../types';
 

@@ -61,7 +61,7 @@ export const saveUserToFirestore = async (user: {
       {
         id: user.uid,
         firebase_uid: user.uid,
-        display_name: user.displayName || 'طالب إديوتك',
+        display_name: user.displayName || 'طالب مسار',
         email: user.email || '',
         role: user.role || 'STD',
         created_at: serverTimestamp(),
@@ -125,13 +125,14 @@ const createSimulatedUser = (data: { uid: string; displayName: string; email: st
 export const notifyAuthListeners = (user: User | null) => {
   if (user) {
     localStorage.setItem(
-      'edutech_simulated_user',
+      'masar_simulated_user',
       JSON.stringify({
         uid: user.uid,
-        displayName: user.displayName || 'مستخدم إديوتك',
-        email: user.email || 'user@edutech.edu',
+        displayName: user.displayName || 'مستخدم مسار',
+        email: user.email || 'user@masar.edu',
       })
     );
+    localStorage.removeItem('edutech_simulated_user');
     // Attempt Firestore persistence
     saveUserToFirestore({
       uid: user.uid,
@@ -169,7 +170,7 @@ export const loginWithEmail = async (email: string, password: string) => {
       console.warn('Firebase API key not live. Initializing simulated session for:', email);
       const simulated = createSimulatedUser({
         uid: 'user-' + Math.floor(1000 + Math.random() * 9000),
-        displayName: email.split('@')[0] || 'طالب إديوتك',
+        displayName: email.split('@')[0] || 'طالب مسار',
         email: email,
       });
       notifyAuthListeners(simulated);
@@ -202,7 +203,7 @@ export const registerWithEmail = async (email: string, password: string, display
       console.warn('Firebase API key not live. Registering simulated session for:', email);
       const simulated = createSimulatedUser({
         uid: 'user-' + Math.floor(1000 + Math.random() * 9000),
-        displayName: displayName || email.split('@')[0] || 'طالب إديوتك',
+        displayName: displayName || email.split('@')[0] || 'طالب مسار',
         email: email,
       });
       notifyAuthListeners(simulated);
@@ -230,8 +231,8 @@ export const loginWithGoogle = async () => {
     console.info('Switching to simulated Google authenticated account for development.');
     const simulatedUser = createSimulatedUser({
       uid: 'google-user-' + Math.floor(1000 + Math.random() * 9000),
-      displayName: 'مستخدم Google (إديوتك)',
-      email: 'user.google@edutech.edu',
+      displayName: 'مستخدم Google (مسار)',
+      email: 'user.google@masar.edu',
     });
     notifyAuthListeners(simulatedUser);
     return {

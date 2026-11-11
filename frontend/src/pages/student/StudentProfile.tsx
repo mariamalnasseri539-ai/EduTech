@@ -25,45 +25,25 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
   studentName = 'هيله سرحان الناصري',
   onBackToDashboard,
 }) => {
+  void onBackToDashboard;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // حالة نمط التعلم التكيفي المفضل
   const [learningStyle, setLearningStyle] = useState<'practical' | 'visual' | 'auditory'>('practical');
   const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState('شغوفة بتعلم البرمجة وتطوير التطبيقات عبر منصة إديوتك الذكية.');
+  const [bio, setBio] = useState('شغوفة بتعلم البرمجة وتطوير التطبيقات عبر منصة مسار الذكية.');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   // قراءة ومراقبة مظهر المنصة العام (Dark / Light)
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('edutech_theme');
-    return saved ? saved === 'dark' : true;
-  });
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const saved = localStorage.getItem('edutech_theme');
-      setIsDarkMode(saved ? saved === 'dark' : true);
-    };
-
-    window.addEventListener('storage', checkTheme);
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      window.removeEventListener('storage', checkTheme);
-      observer.disconnect();
-    };
-  }, []);
+  // Theme handled globally
 
   // بيانات الحساب الأساسية في المنصة (دون أي بيانات جامعية)
   const studentData = {
     name: studentName,
-    email: 'hailah.alnasiri@edutech.edu.ye',
-    accountId: 'EDT-4089',
+    email: 'student@masar.edu.ye',
+    accountId: 'MSR-4089',
     accountStatus: 'حساب موثق ومفعل',
-    membership: 'عضو مسجل في منصة إديوتك',
+    membership: 'عضو مسجل في منصة مسار',
     joinedDate: 'سبتمبر 2026',
     completedCoursesCount: 1,
     currentStreak: 5,
@@ -296,7 +276,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 
             <div className="mt-5 pt-3 border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5 font-medium">
               <Sparkles className="w-3.5 h-3.5 text-[#FFCB74]" />
-              <span>الحساب مسجل ونشط في منصة إديوتك للتعلم التكيفي الذكي.</span>
+              <span>الحساب مسجل ونشط في منصة مسار للتعلم التكيفي الذكي.</span>
             </div>
           </div>
 

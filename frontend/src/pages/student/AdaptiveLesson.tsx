@@ -6,7 +6,6 @@ import {
   CheckCircle2, 
   Bot, 
   ArrowLeft, 
-  Check, 
   X, 
   Send, 
   Zap, 
@@ -19,21 +18,22 @@ import {
   AlertCircle, 
   Cpu, 
   AlertTriangle, 
-  Sun, 
-  Moon, 
-  Compass, 
   Code2, 
   Menu, 
   Home, 
   TrendingUp, 
   User, 
   Settings, 
-  Target
+  Target,
+  ChevronDown,
+  Layers,
+  ListChecks
 } from 'lucide-react';
 
 import { PlatformLogo } from '../../components/common/PlatformLogo';
 import StudentCertificate from './StudentCertificate';
 import { InteractiveCodeEngine } from './InteractiveCodeEngine';
+import { apiClient } from '../../services/apiClient';
 
 type LessonTheme = 'dark' | 'light' | 'neutral';
 
@@ -43,11 +43,27 @@ interface SubTopicDetail {
   type: string;
 }
 
+export interface SlideDefinition {
+  id: string;
+  termAr: string;
+  termEn: string;
+  definitionAr: string;
+}
+
+export interface SlideListGroup {
+  id: string;
+  mainPointAr: string;
+  mainPointEn: string;
+  subPointsAr: string[];
+}
+
 interface SlideContent {
   stepTitle: string;
   badgeText: string;
   description: string;
-  visualType: 'capsule_core' | 'memory_viz' | 'code_walkthrough' | 'pitfalls';
+  definitions?: SlideDefinition[];
+  lists?: SlideListGroup[];
+  visualType?: 'definitions_accordion' | 'lists_accordion' | 'capsule_core' | 'memory_viz' | 'code_walkthrough' | 'pitfalls';
   capsuleData?: {
     label: string;
     items: SubTopicDetail[];
@@ -89,12 +105,14 @@ interface ComprehensiveQuestion {
 }
 
 interface AdaptiveLessonProps {
+  courseId?: string;
   courseTitle?: string;
   studentLevel?: 'مبتدئ' | 'متوسط' | 'متقدم';
   onBackToDashboard: () => void;
 }
 
 export const AdaptiveLesson: React.FC<AdaptiveLessonProps> = ({
+  courseId,
   courseTitle = 'أساسيات البرمجة بلغة Python',
   studentLevel = 'مبتدئ',
   onBackToDashboard,
@@ -104,10 +122,38 @@ export const AdaptiveLesson: React.FC<AdaptiveLessonProps> = ({
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [currentPracticeSlideIndex, setCurrentPracticeSlideIndex] = useState(0);
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+
+  // حالات الربط مع الباك إند و Cloud Firestore للأوامر وشجرة المفاهيم
+  const [activeCourse, setActiveCourse] = useState<any>(null);
+  const [activeSlidePromptTitle, setActiveSlidePromptTitle] = useState<string>('');
+  const [activeCodePromptTitle, setActiveCodePromptTitle] = useState<string>('');
+  const [activeQuizPromptTitle, setActiveQuizPromptTitle] = useState<string>('');
+  const [dynamicCards, setDynamicCards] = useState<CardData[] | null>(null);
   
   const [activeCodeLine, setActiveCodeLine] = useState<number>(1);
+  const [selectedMemoryIndex, setSelectedMemoryIndex] = useState<number>(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCapsuleOpen, setIsCapsuleOpen] = useState(false);
+
+  // حالات القوائم والتعاريف المنسدلة (Accordion / Dropdown)
+  const [expandedDefinitions, setExpandedDefinitions] = useState<Record<string, boolean>>({
+    'def_0_1': true,
+    'def_1_1': true,
+    'def_2_1': true
+  });
+  const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({
+    'list_0_1': true,
+    'list_1_1': true,
+    'list_2_1': true
+  });
+
+  const toggleDefinition = (id: string) => {
+    setExpandedDefinitions(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleList = (id: string) => {
+    setExpandedLists(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const [lessonTheme, setLessonTheme] = useState<LessonTheme>(() => {
     const saved = localStorage.getItem('edutech_lesson_theme') as LessonTheme;
@@ -137,15 +183,10 @@ export const AdaptiveLesson: React.FC<AdaptiveLessonProps> = ({
   const [inputMessage, setInputMessage] = useState('');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const handleSetTheme = (theme: LessonTheme) => {
-    setLessonTheme(theme);
-    localStorage.setItem('edutech_lesson_theme', theme);
-    if (theme === 'dark' || theme === 'neutral') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setLessonTheme(isDark ? 'dark' : 'light');
+  }, []);
 
   const menuItems = [
     { id: 'home', label: 'الرئيسية', icon: Home },
@@ -163,29 +204,51 @@ export const AdaptiveLesson: React.FC<AdaptiveLessonProps> = ({
       conceptSummary: 'المتغير في لغة Python هو مساحة محجوزة في الذاكرة لتخزين قيمة معينة، ويعتمد نظام الكتابة الديناميكي.',
       slides: [
         {
-          stepTitle: 'كبسولة تفكيك المتغيرات البرمجية (Tech Capsule Core)',
-          badgeText: 'سلايد 1: الاستكشاف التفاعلي',
-          description: 'انقري على كبسولة المعالج لتفكيك أجزاء بنية المتغير في الذاكرة ومطالعة تفاصيل كل مكون:',
-          visualType: 'capsule_core',
-          capsuleData: {
-            label: 'بنية المتغير البرمجي في ذاكرة بايثون',
-            items: [
-              { name: 'Variable Name', desc: 'المسمى المرجعي في جدول العناوين', type: 'Pointer' },
-              { name: 'Memory Address', desc: 'موقع التخزين الفيزيائي بالذاكرة RAM', type: 'Hex Ref' },
-              { name: 'Object Value', desc: 'القيمة الفعلية المخزنة ككائن برمجي', type: 'Data Value' },
-              { name: 'Type Tag', desc: 'تحديد نوع الكائن تلقائياً وقت التشغيل', type: 'Dynamic Type' }
-            ]
-          }
+          stepTitle: 'المصطلحات والتعاريف الأساسية للمتغيرات (Definitions Accordion)',
+          badgeText: 'سلايد 1: التعاريف والمصطلحات المعرفية',
+          description: 'انقري على السهم المنسدل لإسدال تعريف كل مصطلح باللغة العربية فقط:',
+          visualType: 'definitions_accordion',
+          definitions: [
+            {
+              id: 'def_default_1',
+              termAr: 'المتغيرات وعناوين الذاكرة',
+              termEn: 'Variables & Memory Pointers',
+              definitionAr: 'المتغير هو مساحة محجوزة في الذاكرة العشوائية RAM لربط مسمى رمزي بكائن بيانات محدد بدقة دون تعديل مباشر للعناوين الفيزيائية.'
+            },
+            {
+              id: 'def_default_2',
+              termAr: 'الكتابة الديناميكية للأنواع',
+              termEn: 'Dynamic Typing Architecture',
+              definitionAr: 'نظام تشغيل يحدد نوع البيانات تلقائياً أثناء زمن التشغيل بناءً على القيمة المسندة دون الحاجة للإعلان الصريح المسبق عن النوع.'
+            }
+          ]
         },
         {
-          stepTitle: 'محاكي تمثيل الذاكرة الفعلي (Memory Visualizer)',
-          badgeText: 'سلايد 2: الهندسة الداخلية',
-          description: 'عند تنفيذ الكود، يقوم مفسر بايثون بإنشاء الكائن أولاً في الذاكرة، ثم يربط اسم المتغير بعنوان الذاكرة (Address Pointer) بشكل فوري.',
-          visualType: 'memory_viz',
-          memorySnapshot: [
-            { name: 'student_name', type: 'str', address: '0x7FFF9A10', value: '"Hailah"' },
-            { name: 'score', type: 'int', address: '0x7FFF9A18', value: '95' },
-            { name: 'is_active', type: 'bool', address: '0x7FFF9A20', value: 'True' }
+          stepTitle: 'قواعد التخصيص والنقاط الهيكلية (Lists Dropdown)',
+          badgeText: 'سلايد 2: القوائم والنقاط الهيكلية',
+          description: 'استعراض النقطة الرئيسية باللغتين مع سهم منسدل يعرض القواعد والتفاصيل بالعربية فقط:',
+          visualType: 'lists_accordion',
+          lists: [
+            {
+              id: 'list_default_1',
+              mainPointAr: 'قواعد تسمية وهيكلة المتغيرات البرمجية',
+              mainPointEn: 'Naming Conventions & Scoping Directives',
+              subPointsAr: [
+                'يجب أن يبدأ اسم المتغير بحرف أبجدي أو بشرطة سفلية، ويُمنع البدء بأرقام أو رموز خاصة.',
+                'تجنب استخدام الكلمات المحجوزة في مفسر اللغة لتفادي تداخل النطاقات البرمجية.',
+                'الالتزام بنمط التسمية الواضح والمعبر عن الغرض الوظيفي للمتغير.'
+              ]
+            },
+            {
+              id: 'list_default_2',
+              mainPointAr: 'أنواع البيانات الأساسية الأولية',
+              mainPointEn: 'Primitive Data Types & Storage',
+              subPointsAr: [
+                'الأعداد الصحيحة (Integers): تخزين الأعداد الرقمية الكاملة بدقة لا متناهية.',
+                'النصوص وسلاسل المحارف (Strings): تمثيل النصوص المكتوبة بأي لغة ضمن ترميز يونيكود.',
+                'القيم المنطقية الثنائية (Booleans): تمثيل حالات التحقق الشرطي بصواب أو خطأ.'
+              ]
+            }
           ]
         },
         {
@@ -503,17 +566,209 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
     }
   ];
 
+  // جلب بيانات شجرة المفاهيم والأوامر النشطة من الباك إند و Cloud Firestore
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAdaptiveMetadata = async () => {
+      try {
+        // 1. جلب تفاصيل المقرر وشجرة المفاهيم إن وُجد المعرف
+        if (courseId) {
+          try {
+            const courseRes = await apiClient.get(`/courses/${courseId}`);
+            if (isMounted && courseRes.data?.course) {
+              const c = courseRes.data.course;
+              setActiveCourse(c);
+              const rawTopics = c.topic_map || c.topics || {};
+              const topicList = Array.isArray(rawTopics) ? rawTopics : Object.values(rawTopics);
+              if (topicList.length > 0) {
+                const mappedCards: CardData[] = topicList.map((top: any, idx: number) => {
+                  const subList: string[] = Array.isArray(top.subTopics) ? top.subTopics : (Array.isArray(top.targetConcepts) ? top.targetConcepts : []);
+                  return {
+                    id: idx + 1,
+                    title: top.title || `الوحدة التعليمية ${idx + 1}`,
+                    conceptSummary: top.description || `مفهوم تعليمي تكيفي موجه بالذكاء الاصطناعي بنظام المحتوى الصفري.`,
+                    slides: [
+                      {
+                        stepTitle: `المصطلحات والتعاريف الأساسية: ${top.title || ''}`,
+                        badgeText: `سلايد 1: التعاريف والمصطلحات (Bilingual Definitions Accordion)`,
+                        description: `عرض اسم المصطلح باللغتين العربية والإنجليزية، يليه سهم منسدل يسدل التعريف بالعربية فقط:`,
+                        visualType: 'definitions_accordion',
+                        definitions: [
+                          {
+                            id: `def_${idx}_1`,
+                            termAr: `مفهوم: ${top.title}`,
+                            termEn: top.titleEn || (top.title.includes('JavaScript') ? 'JavaScript Core' : top.title.includes('Python') ? 'Python Concept' : 'Core Concept'),
+                            definitionAr: top.description || `بنية معرفية أساسية تحدد كيفية تمثيل ومعالجة البيانات والعمليات البرمجية بدقة داخل النظام.`
+                          },
+                          {
+                            id: `def_${idx}_2`,
+                            termAr: `نطاق التنفيذ وزمن التشغيل`,
+                            termEn: `Execution Scope & Runtime Context`,
+                            definitionAr: `البيئة النشطة في الذاكرة التي تحكم دورة حياة المتغيرات والعمليات وتحدد صلاحية الوصول إليها أثناء زمن تشغيل البرنامج.`
+                          },
+                          ...(subList.length > 0 ? [{
+                            id: `def_${idx}_3`,
+                            termAr: typeof subList[0] === 'string' ? subList[0] : (subList[0] as any).name || 'المكون البنائي الفرعي',
+                            termEn: `Specialized Mechanism`,
+                            definitionAr: `الآلية البنائية الفرعية المستخدمة في إدارة وتطبيق التدفق المنطقي لهذا الدرس بكفاءة عالية وفق معايير الكود النظيف.`
+                          }] : [])
+                        ]
+                      },
+                      {
+                        stepTitle: `القواعد والنقاط الهيكلية المعتمدة`,
+                        badgeText: `سلايد 2: القوائم والنقاط (Bilingual Lists Dropdown)`,
+                        description: `عرض النقطة الرئيسية باللغتين مع سهم منسدل يعرض النقاط الفرعية والتفاصيل بالعربية فقط:`,
+                        visualType: 'lists_accordion',
+                        lists: [
+                          {
+                            id: `list_${idx}_1`,
+                            mainPointAr: `المعايير الهندسية لتطبيق ${top.title}`,
+                            mainPointEn: `Engineering Standards & Directives`,
+                            subPointsAr: [
+                              `التحقق الصارم من صحة المدخلات والتوافق النوعي قبل الشروع في المعالجة.`,
+                              `تحسين استهلاك الذاكرة وتفادي تكوين مراجع دائرية غير ضرورية.`,
+                              `الالتزام بمبادئ الكود النظيف وقابلية الصيانة والتوسع المستقبلي.`
+                            ]
+                          },
+                          {
+                            id: `list_${idx}_2`,
+                            mainPointAr: `مخرجات التمكن في شجرة المفاهيم`,
+                            mainPointEn: `Mastery Learning Outcomes`,
+                            subPointsAr: subList.length > 0 
+                              ? subList.map(s => typeof s === 'string' ? `إتقان وتطبيق: ${s}` : `إتقان وتطبيق: ${(s as any).name || 'المفهوم الفرعي'}`)
+                              : [
+                                `استيعاب وتفكيك بنية المفهوم منطقياً دون أخطاء نحوية أو مفاهيمية.`,
+                                `تطبيق الخوارزميات المرتبطة به وحل التحديات العملية بكفاءة عالية.`
+                              ]
+                          }
+                        ]
+                      },
+                      {
+                        stepTitle: `المحاكاة الهندسية وتتبع الكود الحي`,
+                        badgeText: `سلايد 3: واجهة تفاعلية وأنيميشن حي (Interactive UI)`,
+                        description: `واجهة محاكاة تفاعلية تجمع توزيع الذاكرة العشوائية وتتبع الكود سطراً بسطر بألوان صلبة واضحة ومؤشرات حية:`,
+                        visualType: 'memory_viz',
+                        memorySnapshot: [
+                          { name: 'current_concept', type: 'str', address: '0x7FFF9A10', value: `"${top.title || 'Topic'}"` },
+                          { name: 'bloom_level', type: 'str', address: '0x7FFF9A18', value: `"${top.bloomLevel || 'Apply'}"` },
+                          { name: 'mastery_index', type: 'float', address: '0x7FFF9A20', value: '0.85' }
+                        ],
+                        interactiveCode: [
+                          { lineNum: 1, code: `# دراسة وتطبيق: ${top.title}`, explanation: `تهيئة وتخصيص الموارد لمفهوم ${top.title}.` },
+                          { lineNum: 2, code: `concept_status = "mastered"`, explanation: `تحديث مصفوفة التمكن للدفعة المعرفية في جدول الذاكرة.` },
+                          { lineNum: 3, code: `print("تم استيعاب المفهوم وتثبيته بنجاح")`, explanation: `طباعة رسالة تأكيد إتمام المعالجة.` }
+                        ]
+                      },
+                      {
+                        stepTitle: `التحصين البرمجي ومقارنة الأكواد والمزالق (Pitfalls)`,
+                        badgeText: `سلايد 4: التحصين البرمجي (Visual Code Diff)`,
+                        description: `مقارنة بصرية مباشرة بألوان صلبة واضحة بين الخطأ الشائع والحل النموذجي المعتمد لمفهوم ${top.title}:`,
+                        visualType: 'pitfalls',
+                        pitfallTip: {
+                          wrong: `# ممارسة خاطئة شائعة في تطبيق ${top.title}\nprocess_without_validation()`,
+                          right: `# الطريقة المعيارية الصحيحة المعتمدة\nvalidate_inputs()\nprocess()`,
+                          note: `ينبغي مراعاة شروط التحقق المسبقة في شجرة المفاهيم قبل الانتقال للخطوة التالية.`
+                        }
+                      }
+                    ],
+                    practiceSlides: [
+                      {
+                        stepTitle: `المهمة التطبيقية: ممارسة مفهوم ${top.title}`,
+                        badgeText: `تطبيق عملي 1 من 1`,
+                        explanation: `اكتبي ونفذي الكود الخاص بتطبيق ${top.title} للتحقق من المخرجات عبر المصحح الذكي:`,
+                        initialCode: `# تدريب عملي تكيفي على: ${top.title}\nvalue = "${top.title}"\nprint("المفهوم المطبق:", value)`,
+                        expectedOutputHint: `المفهوم المطبق: ${top.title}`,
+                        objectives: [
+                          { id: 'obj_dyn_1', text: `تطبيق عملي مباشر على ${top.title}` },
+                          { id: 'obj_dyn_2', text: `التحقق من صحة المخرجات البرمجية` }
+                        ]
+                      }
+                    ],
+                    challenges: [
+                      {
+                        id: `c_${idx}_1`,
+                        type: 'theory_mcq',
+                        title: `تحدي التمكن المعرفي: ${top.title}`,
+                        questionText: `ما هو المعيار البيداغوجي الأساسي عند تطبيق مفهوم "${top.title}" في بيئة المنصة التكيفية؟`,
+                        options: [
+                          `استيعاب البنية التأسيسية وتطبيق الممارسات المعيارية لمفهوم ${top.title}`,
+                          `تجاوز شروط التحقق المسبقة دون تدقيق في الذاكرة`,
+                          `تعطيل الاستثناءات والأخطاء التشغيلية لزيادة السرعة`,
+                          `لا يوجد أي تأثير لمفهوم ${top.title} على بنية البرنامج`
+                        ],
+                        correctAnswerIndex: 0,
+                        explanation: `المعيار البيداغوجي المعتمد يتطلب ترسيخ القواعد الأساسية لـ ${top.title} لضمان كتابة كود سليم وموثوق.`
+                      },
+                      {
+                        id: `c_${idx}_2`,
+                        type: 'code_tracing',
+                        title: `تتبع المخرجات البرمجية: ${top.title}`,
+                        questionText: `ما هي النتيجة الدقيقة عند تشغيل كود فحص مفهوم ${top.title}؟`,
+                        codeSnippet: `# فحص تطبيقي لمفهوم ${top.title}\nconcept_name = "${top.title}"\nprint("الحالة:", len(concept_name) > 0)`,
+                        options: [
+                          'الحالة: True',
+                          'الحالة: False',
+                          'None',
+                          'SyntaxError'
+                        ],
+                        correctAnswerIndex: 0,
+                        explanation: `تم إسناد نص صحيح للمتغير مما يجعل طول النص أكبر من صفر ويعيد True.`
+                      }
+                    ]
+                  };
+                });
+                setDynamicCards(mappedCards);
+              }
+            }
+          } catch (cErr) {
+            console.warn('Could not fetch specific course details, fallback to default lessons', cErr);
+          }
+        }
+
+        // 2. جلب بيانات الأوامر النشطة الثلاثة (السلايدات، الكود، الاختبار)
+        try {
+          const [slidesPromptRes, codePromptRes, quizPromptRes] = await Promise.allSettled([
+            apiClient.get('/prompts/active/static_slides'),
+            apiClient.get('/prompts/active/interactive_code'),
+            apiClient.get('/prompts/active/micro_quiz')
+          ]);
+
+          if (isMounted) {
+            if (slidesPromptRes.status === 'fulfilled' && slidesPromptRes.value.data?.prompt?.title) {
+              setActiveSlidePromptTitle(slidesPromptRes.value.data.prompt.title);
+            }
+            if (codePromptRes.status === 'fulfilled' && codePromptRes.value.data?.prompt?.title) {
+              setActiveCodePromptTitle(codePromptRes.value.data.prompt.title);
+            }
+            if (quizPromptRes.status === 'fulfilled' && quizPromptRes.value.data?.prompt?.title) {
+              setActiveQuizPromptTitle(quizPromptRes.value.data.prompt.title);
+            }
+          }
+        } catch (pErr) {
+          console.warn('Could not fetch active prompts metadata', pErr);
+        }
+      } catch (err) {
+        console.error('Error initializing adaptive lesson view:', err);
+      }
+    };
+
+    fetchAdaptiveMetadata();
+    return () => { isMounted = false; };
+  }, [courseId, studentLevel]);
+
+  const activeLessonCards = (dynamicCards && dynamicCards.length > 0) ? dynamicCards : lessonCards;
+
   useEffect(() => {
     if (studentLevel === 'متوسط') {
-      setCurrentCardIndex(1);
+      setCurrentCardIndex(Math.min(1, activeLessonCards.length - 1));
     } else if (studentLevel === 'متقدم') {
-      setCurrentCardIndex(lessonCards.length - 1);
+      setCurrentCardIndex(Math.max(0, activeLessonCards.length - 1));
     } else {
       setCurrentCardIndex(0);
     }
-  }, [studentLevel]);
+  }, [studentLevel, activeLessonCards.length]);
 
-  const currentCard = lessonCards[currentCardIndex] || lessonCards[0];
+  const currentCard = activeLessonCards[currentCardIndex] || activeLessonCards[0];
   const activeSlide = currentCard.slides[currentSlideIndex] || currentCard.slides[0];
   const activePracticeSlide = currentCard.practiceSlides[currentPracticeSlideIndex] || currentCard.practiceSlides[0];
   const activeChallenge = currentCard.challenges[currentChallengeIndex] || currentCard.challenges[0];
@@ -602,7 +857,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
       setIsErrorOutput(false);
       setIsPracticeVerified(true);
-      setConsoleOutput(`المخرجات الناجحة:\n${activePracticeSlide.expectedOutputHint}\n\n[✓ مصحح إديوتك الذكي]: تم التنفيذ بنجاح وتطابق الكود مع معايير الخطوة (+20 XP).`);
+      setConsoleOutput(`المخرجات الناجحة:\n${activePracticeSlide.expectedOutputHint}\n\n[✓ مصحح مسار الذكي]: تم التنفيذ بنجاح وتطابق الكود مع معايير الخطوة (+20 XP).`);
       setXp((prev) => prev + 20);
     }, 600);
   };
@@ -612,7 +867,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
       setCurrentChallengeIndex(prev => prev + 1);
       setIsCurrentChallengeCompleted(false);
     } else {
-      if (currentCardIndex + 1 < lessonCards.length) {
+      if (currentCardIndex + 1 < activeLessonCards.length) {
         setCurrentCardIndex(prev => prev + 1);
         setCurrentSlideIndex(0);
         setCurrentPracticeSlideIndex(0);
@@ -660,17 +915,17 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
   const cardSurfaceClass = 
     lessonTheme === 'dark' 
-      ? 'bg-[#2F2F2F] border-[#2F2F2F]/70 shadow-2xl' 
+      ? 'bg-[#1E1E1E] border-2 border-[#383838] shadow-2xl text-[#FFFFFF]' 
       : lessonTheme === 'neutral'
-      ? 'bg-[#232936] border-[#313A4D] shadow-xl'
-      : 'bg-white border-gray-200 shadow-md';
+      ? 'bg-[#222938] border-2 border-[#3A4559] shadow-xl text-[#FFFFFF]'
+      : 'bg-[#FFFFFF] border-2 border-[#E2E8F0] shadow-xl text-[#111111]';
 
   const subBoxClass = 
     lessonTheme === 'dark' 
-      ? 'bg-[#111111] border-[#2F2F2F]' 
+      ? 'bg-[#141414] border-2 border-[#2A2A2A] text-[#FFFFFF]' 
       : lessonTheme === 'neutral'
-      ? 'bg-[#161B24] border-[#2E3747]'
-      : 'bg-[#F6F6F6] border-gray-200';
+      ? 'bg-[#171D28] border-2 border-[#2B3545] text-[#FFFFFF]'
+      : 'bg-[#F8FAFC] border-2 border-[#CBD5E1] text-[#111111]';
 
   return (
     <div className={`w-full min-h-screen ${themeContainerClass} flex flex-col font-sans selection:bg-[#FFCB74]/30 overflow-x-hidden relative transition-colors duration-300`} dir="rtl">
@@ -691,7 +946,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
           transform: isSidebarOpen ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 0.3s ease-in-out'
         }}
-        className={`fixed top-0 right-0 h-full w-72 border-l z-50 flex flex-col justify-between py-6 px-5 shadow-2xl ${
+        className={`fixed top-0 right-0 h-screen max-h-screen w-72 border-l z-50 flex flex-col justify-between py-6 px-5 shadow-2xl overflow-y-auto overflow-x-hidden ${
           lessonTheme === 'dark'
             ? 'bg-[#111111] border-[#2F2F2F] text-white'
             : lessonTheme === 'neutral'
@@ -704,8 +959,8 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
             <div className="flex items-center gap-3">
               <PlatformLogo size={42} />
               <div>
-                <span className="text-base font-black text-[#FFCB74] tracking-wider block leading-tight">إديوتك</span>
-                <span className="text-[10px] opacity-70">EDUTECH</span>
+                <span className="text-base font-black text-[#FFCB74] tracking-wider block leading-tight">مسار</span>
+                <span className="text-[10px] opacity-70">MASAR</span>
               </div>
             </div>
             
@@ -743,7 +998,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
         </div>
 
         <div className="text-[11px] text-center border-t border-white/10 pt-4 opacity-50">
-          منصة إديوتك للتعلم التكيفي الذكي
+          منصة مسار للتعلم التكيفي الذكي
         </div>
       </aside>
 
@@ -767,47 +1022,41 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
           <div onClick={onBackToDashboard} className="flex items-center gap-3 cursor-pointer">
             <PlatformLogo size={38} />
             <div className="text-right">
-              <h2 className="text-sm font-bold leading-tight">منصة إديوتك الذكية</h2>
-              <p className="text-[11px] text-[#FFCB74] font-medium tracking-wide">EduTech</p>
+              <h2 className="text-sm font-bold leading-tight">منصة مسار الذكية</h2>
+              <p className="text-[11px] text-[#FFCB74] font-medium tracking-wide">MASAR</p>
             </div>
           </div>
         </div>
 
+        {/* شارة التزامن الذكي مع أوامر وشجرة مفاهيم الإدارة */}
+        <div className="hidden xl:flex items-center gap-2">
+          {activeSlidePromptTitle && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFCB74]/15 border border-[#FFCB74]/40 text-[11px] font-bold text-[#FFCB74]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>أمر السلايدات: {activeSlidePromptTitle}</span>
+            </div>
+          )}
+          {activeCodePromptTitle && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-[11px] font-bold text-blue-500 dark:text-blue-400">
+              <Code2 className="w-3.5 h-3.5" />
+              <span>أمر الكود: {activeCodePromptTitle}</span>
+            </div>
+          )}
+          {activeCourse && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>المقرر: {activeCourse.title}</span>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center gap-2">
-          <div className={`flex items-center p-1 rounded-xl border ${subBoxClass}`}>
-            <button
-              onClick={() => handleSetTheme('light')}
-              className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                lessonTheme === 'light' ? 'bg-[#FFCB74] text-[#111111] shadow-xs' : 'text-gray-400 hover:text-gray-200'
-              }`}
-              title="الوضع الفاتح"
-            >
-              <Sun className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[10px]">فاتح</span>
-            </button>
-
-            <button
-              onClick={() => handleSetTheme('neutral')}
-              className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                lessonTheme === 'neutral' ? 'bg-[#FFCB74] text-[#111111] shadow-xs' : 'text-gray-400 hover:text-gray-200'
-              }`}
-              title="الوضع المحايد الوسط"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[10px]">وسط</span>
-            </button>
-
-            <button
-              onClick={() => handleSetTheme('dark')}
-              className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                lessonTheme === 'dark' ? 'bg-[#FFCB74] text-[#111111] shadow-xs' : 'text-gray-400 hover:text-gray-200'
-              }`}
-              title="الوضع الداكن الملكي"
-            >
-              <Moon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[10px]">داكن</span>
-            </button>
-          </div>
+          <button
+            onClick={onBackToDashboard}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#FFCB74] text-[#111111] hover:bg-[#ffd794] active:scale-95 transition-all cursor-pointer shadow-xs"
+          >
+            العودة للمقررات
+          </button>
         </div>
       </header>
 
@@ -822,8 +1071,8 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
               <span className="opacity-40">•</span>
               <span className="text-xs opacity-75">
                 {currentStep === 'comprehensive_quiz' 
-                  ? `الاختبار الشامل النهائي (سؤال ${compQuizIndex + 1} من ${comprehensiveQuestions.length})` 
-                  : `البطاقة ${currentCardIndex + 1} من ${lessonCards.length}`}
+                  ? `الاختبار الشامل النهائي (سؤال ${compQuizIndex + 1} من ${comprehensiveQuestions.length})${activeQuizPromptTitle ? ` • مُدار بـ: ${activeQuizPromptTitle}` : ''}` 
+                  : `البطاقة ${currentCardIndex + 1} من ${activeLessonCards.length}`}
               </span>
             </div>
           </div>
@@ -932,153 +1181,362 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
               <p className="text-sm leading-relaxed mb-6 opacity-90">{activeSlide.description}</p>
 
-              {/* المحتوى البصري */}
+              {/* المحتوى البصري والتفاعلي (وفق معايير الألوان الصلبة والتعاريف والقوائم المنسدلة) */}
               <div className="mb-6">
+                
+                {/* 1. هيكلة التعاريف (Bilingual Term Accordion - Arabic Definition) */}
+                {activeSlide.definitions && activeSlide.definitions.length > 0 && (
+                  <div className="space-y-3.5 mb-6">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-[#FFCB74] text-[#111111] flex items-center justify-center font-bold">
+                          <Layers className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs sm:text-sm font-black text-[#111111] dark:text-[#FFCB74]">
+                          المصطلحات والمفاهيم المعرفية (اسدل التعريف العربي بالنقر)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-[#1E1E1E] text-[#FFCB74] border border-[#383838]">
+                        {activeSlide.definitions.length} مصطلحات معتمدة
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                      {activeSlide.definitions.map((def, defIdx) => {
+                        const isOpen = expandedDefinitions[def.id] ?? (defIdx === 0);
+                        return (
+                          <div 
+                            key={def.id || defIdx}
+                            className="rounded-2xl border-2 border-[#E2E8F0] dark:border-[#383838] bg-[#FFFFFF] dark:bg-[#1E1E1E] overflow-hidden transition-all shadow-sm"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => toggleDefinition(def.id)}
+                              className="w-full p-4 flex items-center justify-between gap-3 text-right hover:bg-[#F8FAFC] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                            >
+                              <div className="flex flex-wrap items-center gap-2.5">
+                                <span className="text-sm sm:text-base font-black text-[#111111] dark:text-[#FFFFFF]">
+                                  {def.termAr}
+                                </span>
+                                <span className="text-xs font-mono font-bold text-[#92400E] dark:text-[#FFCB74] bg-[#FEF3C7] dark:bg-[#2A2315] px-2.5 py-0.5 rounded-md border border-[#FDE68A] dark:border-[#78350F]">
+                                  {def.termEn}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
+                                  {isOpen ? 'طي التعريف' : 'عرض التعريف'}
+                                </span>
+                                <div className={`w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#2A2A2A] border border-[#CBD5E1] dark:border-[#444444] flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                                  <ChevronDown className="w-4 h-4" />
+                                </div>
+                              </div>
+                            </button>
+
+                            {isOpen && (
+                              <div className="px-4 pb-4 pt-2 border-t-2 border-[#E2E8F0] dark:border-[#383838] bg-[#F8FAFC] dark:bg-[#161616] animate-fadeIn">
+                                <div className="flex items-start gap-2.5">
+                                  <span className="w-2 h-2 rounded-full bg-[#10B981] mt-2 shrink-0" />
+                                  <p className="text-xs sm:text-sm font-medium leading-relaxed text-[#1E293B] dark:text-[#F1F5F9]">
+                                    {def.definitionAr}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. هيكلة القوائم والنقاط (Bilingual Main Point - Arabic Sub-points) */}
+                {activeSlide.lists && activeSlide.lists.length > 0 && (
+                  <div className="space-y-3.5 mb-6">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-[#2563EB] text-[#FFFFFF] flex items-center justify-center font-bold">
+                          <ListChecks className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs sm:text-sm font-black text-[#111111] dark:text-[#60A5FA]">
+                          النقاط الهيكلية والتوجيهات التنفيذية (اسدل التفاصيل بالعربية)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-[#1E1E1E] text-[#60A5FA] border border-[#383838]">
+                        {activeSlide.lists.length} محاور رئيسية
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                      {activeSlide.lists.map((listGroup, listIdx) => {
+                        const isOpen = expandedLists[listGroup.id] ?? (listIdx === 0);
+                        return (
+                          <div 
+                            key={listGroup.id || listIdx}
+                            className="rounded-2xl border-2 border-[#E2E8F0] dark:border-[#383838] bg-[#FFFFFF] dark:bg-[#1E1E1E] overflow-hidden transition-all shadow-sm"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => toggleList(listGroup.id)}
+                              className="w-full p-4 flex items-center justify-between gap-3 text-right hover:bg-[#F8FAFC] dark:hover:bg-[#252525] transition-colors cursor-pointer"
+                            >
+                              <div className="flex flex-wrap items-center gap-2.5">
+                                <span className="text-sm sm:text-base font-black text-[#111111] dark:text-[#FFFFFF]">
+                                  {listGroup.mainPointAr}
+                                </span>
+                                <span className="text-xs font-mono font-bold text-[#1D4ED8] dark:text-[#93C5FD] bg-[#DBEAFE] dark:bg-[#1E293B] px-2.5 py-0.5 rounded-md border border-[#BFDBFE] dark:border-[#1E3A8A]">
+                                  {listGroup.mainPointEn}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
+                                  {isOpen ? 'طي التفاصيل' : 'عرض التفاصيل'}
+                                </span>
+                                <div className={`w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#2A2A2A] border border-[#CBD5E1] dark:border-[#444444] flex items-center justify-center text-[#111111] dark:text-[#FFFFFF] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                                  <ChevronDown className="w-4 h-4" />
+                                </div>
+                              </div>
+                            </button>
+
+                            {isOpen && (
+                              <div className="px-4 pb-4 pt-3 border-t-2 border-[#E2E8F0] dark:border-[#383838] bg-[#F8FAFC] dark:bg-[#161616] animate-fadeIn">
+                                <ul className="space-y-2.5 text-xs sm:text-sm">
+                                  {listGroup.subPointsAr.map((sub, sIdx) => (
+                                    <li key={sIdx} className="flex items-start gap-2.5 text-[#1E293B] dark:text-[#F1F5F9] font-medium leading-relaxed">
+                                      <span className="w-2 h-2 rounded-full bg-[#2563EB] dark:bg-[#60A5FA] shrink-0 mt-1.5" />
+                                      <span>{sub}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. الكبسولة التفاعلية بألوان صلبة واضحة */}
                 {activeSlide.visualType === 'capsule_core' && activeSlide.capsuleData && (
-                  <div className={`p-6 rounded-3xl border ${subBoxClass} flex flex-col items-center justify-center text-center relative overflow-hidden transition-all`}>
+                  <div className={`p-6 sm:p-7 rounded-3xl border-2 border-[#E2E8F0] dark:border-[#383838] bg-[#FFFFFF] dark:bg-[#141414] flex flex-col items-center justify-center text-center relative overflow-hidden transition-all shadow-md`}>
                     {!isCapsuleOpen ? (
                       <div 
                         onClick={() => setIsCapsuleOpen(true)}
-                        className="group cursor-pointer flex flex-col items-center p-6 rounded-2xl border-2 border-dashed border-[#FFCB74]/60 hover:border-[#FFCB74] hover:bg-[#FFCB74]/5 transition-all w-full max-w-sm"
+                        className="group cursor-pointer flex flex-col items-center p-6 sm:p-8 rounded-3xl border-2 border-dashed border-[#FFCB74] bg-[#F8FAFC] dark:bg-[#1E1E1E] hover:bg-[#FFFBEB] dark:hover:bg-[#252525] transition-all w-full max-w-md shadow-lg"
                       >
-                        <div className="w-20 h-20 rounded-2xl bg-[#FFCB74]/15 border border-[#FFCB74]/40 flex items-center justify-center text-[#FFCB74] mb-3 group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-lg">
-                          <Cpu className="w-10 h-10 animate-pulse" />
+                        <div className="w-20 h-20 rounded-2xl bg-[#FFCB74] text-[#111111] flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-md font-bold">
+                          <Cpu className="w-10 h-10 animate-pulse text-[#111111]" />
                         </div>
-                        <h4 className="text-sm font-black text-[#FFCB74] mb-1">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-ping" />
+                          <span className="text-[11px] font-bold text-[#10B981] font-mono">جاهزة للتفكيك البصري (Solid Colors)</span>
+                        </div>
+                        <h4 className="text-base font-black text-[#111111] dark:text-[#FFCB74] mb-1">
                           {activeSlide.capsuleData.label}
                         </h4>
-                        <span className="text-xs opacity-75 flex items-center gap-1.5">
-                          <span>انقري هنا لفتح الكبسولة وتفكيك عناصرها برمجياً</span>
-                          <Sparkles className="w-3.5 h-3.5 text-[#FFCB74]" />
+                        <span className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium mt-1">
+                          <span>انقري هنا لفتح الكبسولة واستعراض مكوناتها بالألوان التفاعلية</span>
+                          <Sparkles className="w-4 h-4 text-[#FFCB74]" />
                         </span>
                       </div>
                     ) : (
                       <div className="w-full animate-fadeIn">
-                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
-                          <span className="text-xs font-black text-[#FFCB74] flex items-center gap-2">
-                            <Cpu className="w-4 h-4" />
-                            <span>محتويات كبسولة المتغير البرمجي</span>
-                          </span>
+                        <div className="flex items-center justify-between mb-5 pb-3 border-b-2 border-[#E2E8F0] dark:border-[#2A2A2A]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-[#FFCB74] flex items-center justify-center text-[#111111] font-bold">
+                              <Cpu className="w-4 h-4" />
+                            </div>
+                            <span className="text-sm font-black text-[#111111] dark:text-[#FFCB74]">
+                              تفكيك عناصر الكبسولة التفاعلية
+                            </span>
+                          </div>
                           <button
                             onClick={() => setIsCapsuleOpen(false)}
-                            className="text-[11px] text-gray-400 hover:text-white underline cursor-pointer"
+                            className="text-xs px-3.5 py-1.5 rounded-xl bg-[#F1F5F9] dark:bg-[#252525] border-2 border-[#CBD5E1] dark:border-[#444444] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E2E8F0] dark:hover:bg-[#333333] transition-all cursor-pointer font-black"
                           >
-                            إغلاق الكبسولة
+                            ✕ طي الكبسولة
                           </button>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                          {activeSlide.capsuleData.items.map((item, itmIdx) => (
-                            <div 
-                              key={itmIdx}
-                              className="p-3.5 rounded-2xl border border-[#FFCB74]/30 bg-white/5 dark:bg-black/30 flex flex-col justify-between text-right shadow-xs hover:border-[#FFCB74] transition-all"
-                            >
-                              <div>
-                                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#FFCB74] font-bold mb-2 inline-block">
-                                  {item.type}
-                                </span>
-                                <h5 className="text-xs font-black text-[#111111] dark:text-white mb-1">
-                                  {item.name}
-                                </h5>
-                                <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                                  {item.desc}
-                                </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                          {activeSlide.capsuleData.items.map((item, itmIdx) => {
+                            const solidColorThemes = [
+                              { border: 'border-2 border-[#10B981]', bg: 'bg-[#F0FDF4] dark:bg-[#0D2214]', badge: 'bg-[#10B981] text-[#FFFFFF]', text: 'text-[#064E3B] dark:text-[#34D399]' },
+                              { border: 'border-2 border-[#0284C7]', bg: 'bg-[#F0F9FF] dark:bg-[#0A2338]', badge: 'bg-[#0284C7] text-[#FFFFFF]', text: 'text-[#0C4A6E] dark:text-[#38BDF8]' },
+                              { border: 'border-2 border-[#7C3AED]', bg: 'bg-[#FAF5FF] dark:bg-[#1E0F33]', badge: 'bg-[#7C3AED] text-[#FFFFFF]', text: 'text-[#4C1D95] dark:text-[#C084FC]' },
+                              { border: 'border-2 border-[#D97706]', bg: 'bg-[#FFFBEB] dark:bg-[#2B1B09]', badge: 'bg-[#D97706] text-[#FFFFFF]', text: 'text-[#78350F] dark:text-[#FBBF24]' }
+                            ];
+                            const theme = solidColorThemes[itmIdx % solidColorThemes.length];
+
+                            return (
+                              <div 
+                                key={itmIdx}
+                                className={`p-4 rounded-2xl ${theme.border} ${theme.bg} flex flex-col justify-between text-right shadow-sm hover:scale-102 transition-all cursor-pointer`}
+                              >
+                                <div>
+                                  <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md ${theme.badge} mb-2 inline-block`}>
+                                    {item.type}
+                                  </span>
+                                  <h5 className="text-sm font-black text-[#111111] dark:text-white mb-1.5">
+                                    {item.name}
+                                  </h5>
+                                  <p className="text-xs text-[#334155] dark:text-[#E2E8F0] leading-relaxed font-medium">
+                                    {item.desc}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
                   </div>
                 )}
 
+                {/* 4. محاكاة الذاكرة بألوان صلبة واضحة ومؤشرات حية */}
                 {activeSlide.visualType === 'memory_viz' && activeSlide.memorySnapshot && (
-                  <div className={`p-4 sm:p-5 rounded-2xl border ${subBoxClass}`}>
-                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
-                      <span className="text-xs font-black text-[#FFCB74] flex items-center gap-1.5">
-                        <Cpu className="w-4 h-4" />
-                        <span>محاكاة توزيع الذاكرة العشوائية (RAM Heap & Stack)</span>
+                  <div className={`p-5 sm:p-6 rounded-3xl border-2 border-[#383838] bg-[#141414] text-[#FFFFFF] shadow-xl`}>
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-[#2A2A2A]">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-ping" />
+                        <span className="text-xs font-black text-[#FFCB74] flex items-center gap-1.5">
+                          <Cpu className="w-4 h-4 text-[#FFCB74]" />
+                          <span>محاكاة توزيع الذاكرة العشوائية الحية (RAM Heap & Stack Simulator)</span>
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-[#1E1E1E] text-[#10B981] font-bold border-2 border-[#10B981]">
+                        ● Live Telemetry
                       </span>
-                      <span className="text-[10px] font-mono opacity-60">Architecture: x86_64</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {activeSlide.memorySnapshot.map((mem, mIdx) => (
-                        <div key={mIdx} className="p-3 rounded-xl border border-white/10 bg-black/20 flex flex-col gap-1">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-mono text-[#FFCB74] font-black">{mem.name}</span>
-                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 font-mono">{mem.type}</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-4">
+                      {activeSlide.memorySnapshot.map((mem, mIdx) => {
+                        const isSelected = selectedMemoryIndex === mIdx;
+                        return (
+                          <div 
+                            key={mIdx} 
+                            onClick={() => setSelectedMemoryIndex(mIdx)}
+                            className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col gap-1.5 ${
+                              isSelected
+                                ? 'border-[#FFCB74] bg-[#2A2315] shadow-md scale-102'
+                                : 'border-[#383838] bg-[#1E1E1E] hover:border-[#FFCB74]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-mono text-[#FFCB74] font-black">{mem.name}</span>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#2D2D2D] text-[#E2E8F0] font-bold border border-[#444444]">
+                                {mem.type}
+                              </span>
+                            </div>
+                            <div className="font-mono text-sm text-[#10B981] font-black tracking-wide">
+                              {mem.value}
+                            </div>
+                            <div className="text-[10px] font-mono text-[#94A3B8] border-t-2 border-[#2A2A2A] pt-1.5 flex items-center justify-between">
+                              <span>Ref: {mem.address}</span>
+                              <span className="text-[9px] text-[#FFCB74] font-bold">انقر للفحص</span>
+                            </div>
                           </div>
-                          <div className="font-mono text-xs text-emerald-400 font-bold">{mem.value}</div>
-                          <div className="text-[9px] font-mono opacity-50 border-t border-white/5 pt-1 mt-1">
-                            Ref: {mem.address}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
+
+                    {/* تفاصيل المؤشر المحدد */}
+                    {activeSlide.memorySnapshot[selectedMemoryIndex] && (
+                      <div className="p-3.5 rounded-xl bg-[#1E1E1E] border-2 border-[#FFCB74] text-xs font-mono flex flex-wrap items-center justify-between gap-2 text-[#E2E8F0]">
+                        <span className="text-[#FFCB74] font-bold">
+                          المتغير المفحوص: {activeSlide.memorySnapshot[selectedMemoryIndex].name}
+                        </span>
+                        <span className="text-[#10B981] font-bold">
+                          القيمة المخزنة: {activeSlide.memorySnapshot[selectedMemoryIndex].value}
+                        </span>
+                        <span className="text-[#94A3B8]">
+                          العنوان السداسي: {activeSlide.memorySnapshot[selectedMemoryIndex].address}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
 
+                {/* 5. تشريح الكود السطري التفاعلي */}
                 {activeSlide.visualType === 'code_walkthrough' && activeSlide.interactiveCode && (
-                  <div className={`rounded-2xl border ${subBoxClass} overflow-hidden`}>
-                    <div className="px-4 py-2 bg-black/30 border-b border-white/10 flex items-center justify-between text-xs">
-                      <span className="font-mono text-[#FFCB74] flex items-center gap-1.5">
-                        <Code2 className="w-3.5 h-3.5" />
-                        <span>walkthrough.py</span>
+                  <div className={`rounded-3xl border-2 border-[#383838] overflow-hidden shadow-xl bg-[#121212]`}>
+                    <div className="px-5 py-3 bg-[#1A1A1A] border-b-2 border-[#2A2A2A] flex items-center justify-between text-xs">
+                      <span className="font-mono text-[#FFCB74] flex items-center gap-2 font-bold">
+                        <Code2 className="w-4 h-4" />
+                        <span>Interactive_Walkthrough.py</span>
                       </span>
-                      <span className="text-[10px] opacity-70">انقري على أي سطر لتشريحه</span>
+                      <span className="text-[11px] text-[#94A3B8] font-bold">
+                        انقري على أي سطر لتشريحه برمجياً بالذكاء الاصطناعي
+                      </span>
                     </div>
 
-                    <div className="p-4 font-mono text-xs space-y-1.5" dir="ltr">
-                      {activeSlide.interactiveCode.map((line) => (
-                        <div
-                          key={line.lineNum}
-                          onClick={() => setActiveCodeLine(line.lineNum)}
-                          className={`p-2 rounded-lg cursor-pointer flex items-center gap-3 transition-all ${
-                            activeCodeLine === line.lineNum
-                              ? 'bg-[#FFCB74]/20 border border-[#FFCB74] text-white shadow-xs'
-                              : 'hover:bg-white/5 opacity-80'
-                          }`}
-                        >
-                          <span className="text-gray-500 select-none w-4 text-right">{line.lineNum}</span>
-                          <span className="font-bold text-[#FFCB74]">{line.code}</span>
-                        </div>
-                      ))}
+                    <div className="p-4 sm:p-5 font-mono text-xs space-y-2 bg-[#0E0E0E]" dir="ltr">
+                      {activeSlide.interactiveCode.map((line) => {
+                        const isActive = activeCodeLine === line.lineNum;
+                        return (
+                          <div
+                            key={line.lineNum}
+                            onClick={() => setActiveCodeLine(line.lineNum)}
+                            className={`p-2.5 rounded-xl cursor-pointer flex items-center gap-3 transition-all ${
+                              isActive
+                                ? 'bg-[#2A2315] border-2 border-[#FFCB74] text-[#FFFFFF] shadow-md'
+                                : 'hover:bg-[#1E1E1E] text-[#94A3B8] hover:text-[#FFFFFF] border-2 border-transparent'
+                            }`}
+                          >
+                            <span className="text-[#64748B] font-bold select-none w-5 text-right font-mono">{line.lineNum}</span>
+                            <span className={`font-bold font-mono ${isActive ? 'text-[#FFCB74]' : 'text-[#E2E8F0]'}`}>
+                              {line.code}
+                            </span>
+                            {isActive && (
+                              <span className="mr-auto text-[10px] px-2.5 py-0.5 rounded-md bg-[#FFCB74] text-[#111111] font-black">
+                                السطر النشط
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
 
-                    <div className="p-3 bg-black/40 border-t border-white/10 text-xs flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#FFCB74] animate-ping" />
-                      <span className="opacity-90 font-medium">
+                    <div className="p-4 bg-[#1A1A1A] border-t-2 border-[#2A2A2A] text-xs sm:text-sm flex items-center gap-2.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#FFCB74] animate-ping shrink-0" />
+                      <span className="text-[#FFFFFF] font-medium leading-relaxed">
                         {activeSlide.interactiveCode.find(l => l.lineNum === activeCodeLine)?.explanation}
                       </span>
                     </div>
                   </div>
                 )}
 
+                {/* 6. المزالق البرمجية والتحصين بألوان صلبة عالية التباين */}
                 {activeSlide.visualType === 'pitfalls' && activeSlide.pitfallTip && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-4 rounded-2xl border border-red-500/30 bg-red-500/10">
-                      <div className="flex items-center gap-1.5 text-xs font-black text-red-400 mb-2">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>طريقة خاطئة شائعة (Wrong)</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-5 rounded-3xl border-2 border-[#DC2626] bg-[#FEF2F2] dark:bg-[#251010] shadow-sm">
+                      <div className="flex items-center gap-2 text-xs font-black text-[#DC2626] dark:text-[#F87171] mb-2.5">
+                        <AlertTriangle className="w-4 h-4 animate-bounce" />
+                        <span>مكمن الخلل الشائع (Wrong Pattern)</span>
                       </div>
-                      <pre className="font-mono text-xs whitespace-pre-wrap text-red-200" dir="ltr">
+                      <pre className="font-mono text-xs whitespace-pre-wrap text-[#991B1B] dark:text-[#FECACA] bg-[#FFFFFF] dark:bg-[#1A0A0A] p-3.5 rounded-xl border-2 border-[#FCA5A5] dark:border-[#7F1D1D]" dir="ltr">
                         {activeSlide.pitfallTip.wrong}
                       </pre>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10">
-                      <div className="flex items-center gap-1.5 text-xs font-black text-emerald-400 mb-2">
+                    <div className="p-5 rounded-3xl border-2 border-[#10B981] bg-[#F0FDF4] dark:bg-[#0E2015] shadow-sm">
+                      <div className="flex items-center gap-2 text-xs font-black text-[#10B981] dark:text-[#34D399] mb-2.5">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>التطبيق النموذجي الصحيح (Right)</span>
+                        <span>التطبيق النموذجي المعتمد (Clean Code)</span>
                       </div>
-                      <pre className="font-mono text-xs whitespace-pre-wrap text-emerald-200" dir="ltr">
+                      <pre className="font-mono text-xs whitespace-pre-wrap text-[#065F46] dark:text-[#A7F3D0] bg-[#FFFFFF] dark:bg-[#07150D] p-3.5 rounded-xl border-2 border-[#6EE7B7] dark:border-[#064E3B]" dir="ltr">
                         {activeSlide.pitfallTip.right}
                       </pre>
                     </div>
 
-                    <div className={`sm:col-span-2 p-3 rounded-xl border ${subBoxClass} text-xs opacity-90`}>
-                      💡 <strong>نصيحة المعلم:</strong> {activeSlide.pitfallTip.note}
+                    <div className={`sm:col-span-2 p-4 rounded-2xl border-2 border-[#D97706] bg-[#FFFBEB] dark:bg-[#231808] text-xs text-[#111111] dark:text-white flex items-center justify-between gap-3 shadow-sm`}>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-[#D97706] dark:text-[#FFCB74] shrink-0" />
+                        <span className="text-[#78350F] dark:text-[#FDE68A]"><strong>نصيحة المعلم الذكية:</strong> {activeSlide.pitfallTip.note}</span>
+                      </div>
+                      <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-[#D97706] text-[#FFFFFF] font-mono shrink-0 whitespace-nowrap">
+                        +20 XP Focus
+                      </span>
                     </div>
                   </div>
                 )}
@@ -1222,7 +1680,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
                 <div className="border-t border-white/10 p-3.5 bg-black/30">
                   <span className="font-mono text-[11px] text-[#FFCB74] block mb-1 font-bold">
-                    مخرجات الطرفية ومصحح إديوتك الذكي:
+                    مخرجات الطرفية ومصحح مسار الذكي:
                   </span>
                   <div className="bg-black/60 border border-white/10 rounded-xl p-3 min-h-[60px] font-mono text-xs leading-relaxed">
                     {consoleOutput ? (
@@ -1334,7 +1792,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                   <span>
                     {currentChallengeIndex + 1 < currentCard.challenges.length 
                       ? 'السؤال التفاعلي التالي' 
-                      : currentCardIndex + 1 < lessonCards.length 
+                      : currentCardIndex + 1 < activeLessonCards.length 
                       ? 'الانتقال للبطاقة التالية' 
                       : 'إتمام الدرس والاختبار الشامل'}
                   </span>
@@ -1486,7 +1944,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
 
       {/* المساعد الذكي */}
       {isAiTutorOpen && (
-        <aside className={`fixed top-0 left-0 h-full w-full sm:w-96 border-r z-50 flex flex-col justify-between shadow-2xl animate-fadeIn ${
+        <aside className={`fixed top-0 left-0 h-screen max-h-screen w-full sm:w-96 border-r z-50 flex flex-col justify-between shadow-2xl animate-fadeIn overflow-y-auto overflow-x-hidden ${
           lessonTheme === 'dark' ? 'bg-[#111111] border-[#2F2F2F]' : lessonTheme === 'neutral' ? 'bg-[#181C24] border-[#313A4D]' : 'bg-white border-gray-200'
         }`}>
           <div className="p-4 border-b border-white/10 flex items-center justify-between">
@@ -1495,7 +1953,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
                 <Bot className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-black">مرشد إديوتك الذكي</h4>
+                <h4 className="text-xs font-black">مرشد مسار الذكي</h4>
                 <span className="text-[9px] text-emerald-400 font-bold">مساعد سياقي للدروس التكيفية</span>
               </div>
             </div>
@@ -1551,7 +2009,7 @@ print("الـ XP بعد المضاعفة:", xp_total)`,
       )}
 
       <footer className="w-full py-3 text-center text-xs opacity-60 border-t border-white/10 z-10 backdrop-blur-md">
-        منصة إديوتك للتعلم التكيفي الذكي • جميع الحقوق محفوظة
+        منصة مسار للتعلم التكيفي الذكي • جميع الحقوق محفوظة
       </footer>
 
     </div>

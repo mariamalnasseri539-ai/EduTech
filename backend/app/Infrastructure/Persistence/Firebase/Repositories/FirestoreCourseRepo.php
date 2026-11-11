@@ -38,4 +38,29 @@ final class FirestoreCourseRepo implements CourseRepositoryInterface
         $topicMap = $this->getTopicMap($courseId);
         return $topicMap[$topicId->getValue()] ?? null;
     }
+
+    public function saveCourse(array $courseData): array
+    {
+        $courseId = (string)($courseData['id'] ?? ('course-' . bin2hex(random_bytes(4))));
+        $courseData['id'] = $courseId;
+
+        // Ensure topic_map is normalized
+        if (!isset($courseData['topic_map']) && isset($courseData['topics'])) {
+            $courseData['topic_map'] = $courseData['topics'];
+        }
+
+        // Set default placement test questions count if missing
+        if (!isset($courseData['placement_test_questions_count'])) {
+            $courseData['placement_test_questions_count'] = 6;
+        }
+
+        $this->firebase->setDocument(self::COLLECTION, $courseId, $courseData);
+        return $courseData;
+    }
+
+    public function deleteCourse(string $courseId): bool
+    {
+        $this->firebase->deleteDocument(self::COLLECTION, $courseId);
+        return true;
+    }
 }

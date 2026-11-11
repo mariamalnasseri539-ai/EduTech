@@ -3,15 +3,10 @@ import {
   Trophy, 
   Flame, 
   Zap, 
-  Award, 
   FileCheck2, 
   Printer, 
-  ArrowRight, 
-  Sparkles, 
-  Code2, 
   CheckCircle2, 
-  Lock,
-  Star
+  Lock
 } from 'lucide-react';
 
 import StudentCertificate, { CertificateData } from './StudentCertificate';
@@ -35,33 +30,13 @@ export const StudentAchievements: React.FC<StudentAchievementsProps> = ({
   studentName = 'هيله سرحان الناصري',
   onBackToDashboard,
 }) => {
+  void onBackToDashboard;
   const [selectedCert, setSelectedCert] = useState<CertificateData | null>(null);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // قراءة ومراقبة مظهر المنصة العام (Dark / Light)
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('edutech_theme');
-    return saved ? saved === 'dark' : true;
-  });
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const saved = localStorage.getItem('edutech_theme');
-      setIsDarkMode(saved ? saved === 'dark' : true);
-    };
-
-    window.addEventListener('storage', checkTheme);
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      window.removeEventListener('storage', checkTheme);
-      observer.disconnect();
-    };
-  }, []);
+  // Theme handled globally
 
   // إحصائيات التلعيب
   const stats = {

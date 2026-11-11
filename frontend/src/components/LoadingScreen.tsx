@@ -8,7 +8,7 @@ interface LoadingScreenProps {
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   message = 'جاري تهيئة المنصة التعليمية...',
-  subMessage = 'إديوتك • تجربة تعلّم ذكية وتفاعلية',
+  subMessage = 'مسار • تجربة تعلّم ذكية وتفاعلية',
 }) => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F6F6F6] dark:bg-[#111111] text-slate-800 dark:text-slate-100 transition-colors duration-300 select-none">
@@ -27,10 +27,10 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         {/* Brand Name */}
         <div className="flex items-center space-x-2 space-x-reverse mb-2">
           <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-            إديوتك
+            مسار
           </h1>
           <span className="text-xs uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74] border border-[#FFCB74]/40 font-mono">
-            EduTech
+            MASAR
           </span>
         </div>
 

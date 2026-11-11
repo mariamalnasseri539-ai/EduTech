@@ -3,7 +3,7 @@ import {
   Sparkles, 
   CheckCircle2, 
   ArrowLeft, 
-  ArrowRight,
+  ArrowRight, 
   Trophy, 
   Code2, 
   Zap, 
@@ -12,17 +12,22 @@ import {
   GitBranch, 
   ChevronLeft, 
   Info, 
-  RotateCcw,
-  Menu,
-  X,
-  Home,
-  TrendingUp,
-  User,
-  Settings
+  RotateCcw, 
+  Menu, 
+  X, 
+  Home, 
+  TrendingUp, 
+  User, 
+  Settings,
+  Loader2,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
-// استيراد مكون اللوجو المعتمد
+// استيراد مكون اللوجو المعتمد و Axios Client
 import { PlatformLogo } from '../../components/common/PlatformLogo';
+import { apiClient } from '../../services/apiClient';
 
 interface Question {
   id: number;
@@ -50,12 +55,14 @@ interface ConceptNode {
 }
 
 interface PlacementTestProps {
+  courseId?: string;
   courseTitle?: string;
   onFinishTest: (score: number, level: 'مبتدئ' | 'متوسط' | 'متقدم') => void;
   onCancel: () => void;
 }
 
 export const PlacementTest: React.FC<PlacementTestProps> = ({
+  courseId = 'python-101',
   courseTitle = 'أساسيات البرمجة بلغة Python',
   onFinishTest,
   onCancel,
@@ -69,29 +76,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // قراءة ومراقبة مظهر المنصة العام (Dark / Light)
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('edutech_theme');
-    return saved ? saved === 'dark' : true;
-  });
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const saved = localStorage.getItem('edutech_theme');
-      setIsDarkMode(saved ? saved === 'dark' : true);
-    };
-
-    window.addEventListener('storage', checkTheme);
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      window.removeEventListener('storage', checkTheme);
-      observer.disconnect();
-    };
-  }, []);
+  // Theme handled globally via documentElement.classList
 
   // عناصر القائمة الجانبية الموحدة
   const menuItems = [
@@ -159,7 +144,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
   }, []);
 
   // بنك الأسئلة الشامل
-  const questions: Question[] = [
+  const defaultQuestions: Question[] = [
     {
       id: 1,
       type: 'theory',
@@ -500,6 +485,55 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
     ];
   };
 
+  
+  const [testId, setTestId] = useState<string>('');
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [activePromptTitle, setActivePromptTitle] = useState<string>('أمر امتحان تحديد المستوى التكيفي القياسي');
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [studentAnswers, setStudentAnswers] = useState<Record<number, number>>({});
+  const [evalBreakdown, setEvalBreakdown] = useState<any[]>([]);
+  const [showExplanations, setShowExplanations] = useState(false);
+  const [determinedLevel, setDeterminedLevel] = useState<'مبتدئ' | 'متوسط' | 'متقدم'>('مبتدئ');
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPlacementTest = async () => {
+      try {
+        setIsLoadingQuestions(true);
+        const res = await apiClient.post('/assessment/placement-test/generate', {
+          course_id: courseId,
+        });
+        if (isMounted && res.data && Array.isArray(res.data.questions) && res.data.questions.length > 0) {
+          setTestId(res.data.test_id);
+          if (res.data.prompt_title) {
+            setActivePromptTitle(res.data.prompt_title);
+          }
+          const dynamicQuestions: Question[] = res.data.questions.map((q: any, idx: number) => ({
+            id: q.id ?? idx + 1,
+            type: q.type ?? 'theory',
+            title: q.title,
+            concept: q.concept || 'مفاهيم برمجية',
+            code: q.code || undefined,
+            options: q.options || [],
+            correctAnswer: -1,
+            explanation: '',
+          }));
+          setQuestions(dynamicQuestions);
+        }
+      } catch (err) {
+        console.warn('Fallback to procedural questions pool:', err);
+        if (isMounted) setQuestions(defaultQuestions);
+      } finally {
+        if (isMounted) setIsLoadingQuestions(false);
+      }
+    };
+    fetchPlacementTest();
+    return () => {
+      isMounted = false;
+    };
+  }, [courseId]);
+
   const activeConceptTree = getCourseConceptTree();
   const currentQuestion = questions[currentQuestionIndex];
   const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
@@ -525,32 +559,77 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
   const handleRetakeTest = () => {
     setCurrentQuestionIndex(0);
     setSelectedOption(null);
+    setStudentAnswers({});
     setScore(0);
     setXp(0);
     setShowResult(false);
     setSelectedResultNode(null);
+    setEvalBreakdown([]);
+  };
+
+  const submitEvaluation = async (answersMap: Record<number, number>) => {
+    setIsEvaluating(true);
+    try {
+      const answersPayload = Object.entries(answersMap).map(([qId, optIdx]) => ({
+        question_id: parseInt(qId, 10),
+        selected_option: optIdx,
+      }));
+
+      const res = await apiClient.post('/assessment/placement-test/evaluate', {
+        test_id: testId || 'pt_fallback',
+        course_id: courseId,
+        answers: answersPayload,
+      });
+
+      const data = res.data;
+      const finalScore = data.correct_count ?? 0;
+      const finalLevel = (data.determined_level as 'مبتدئ' | 'متوسط' | 'متقدم') ?? 'مبتدئ';
+      const finalXp = data.xp_earned ?? (finalScore * 30 + 50);
+
+      setScore(finalScore);
+      setXp(finalXp);
+      setDeterminedLevel(finalLevel);
+      setEvalBreakdown(data.results_breakdown || []);
+
+      localStorage.setItem('edutech_student_level', finalLevel);
+
+      const startIdx = getStartingConceptIndex(finalLevel);
+      setSelectedResultNode(activeConceptTree[startIdx] || activeConceptTree[0]);
+      setShowResult(true);
+    } catch (err) {
+      console.warn('Backend evaluation fallback:', err);
+      let localScore = 0;
+      questions.forEach((q) => {
+        if (answersMap[q.id] !== undefined && q.correctAnswer !== -1 && answersMap[q.id] === q.correctAnswer) {
+          localScore += 1;
+        }
+      });
+      // pct calculated in determineLevel
+      const localLevel: 'مبتدئ' | 'متوسط' | 'متقدم' = determineLevel(localScore);
+      setScore(localScore);
+      setXp(localScore * 30 + 50);
+      setDeterminedLevel(localLevel);
+      localStorage.setItem('edutech_student_level', localLevel);
+      const startIdx = getStartingConceptIndex(localLevel);
+      setSelectedResultNode(activeConceptTree[startIdx] || activeConceptTree[0]);
+      setShowResult(true);
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
   const handleNextQuestion = () => {
     if (selectedOption === null) return;
-
-    let newScore = score;
-    let newXp = xp;
-    if (selectedOption === currentQuestion.correctAnswer) {
-      newScore += 1;
-      newXp += 30;
-      setScore(newScore);
-      setXp(newXp);
-    }
+    const currentQ = questions[currentQuestionIndex];
+    const updatedAnswers = { ...studentAnswers, [currentQ.id]: selectedOption };
+    setStudentAnswers(updatedAnswers);
 
     if (currentQuestionIndex + 1 < questions.length) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedOption(null);
+      const nextQ = questions[currentQuestionIndex + 1];
+      setSelectedOption(nextQ && updatedAnswers[nextQ.id] !== undefined ? updatedAnswers[nextQ.id] : null);
     } else {
-      const calculatedLevel = determineLevel(newScore);
-      const startIdx = getStartingConceptIndex(calculatedLevel);
-      setSelectedResultNode(activeConceptTree[startIdx] || activeConceptTree[0]);
-      setShowResult(true);
+      submitEvaluation(updatedAnswers);
     }
   };
 
@@ -574,7 +653,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
 
       {/* السايد بار الموحد لجميع الواجهات */}
       <aside 
-        className={`fixed top-0 right-0 h-full w-72 border-l z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between py-6 px-5 shadow-2xl bg-white dark:bg-[#111111] border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-[#111111] dark:text-[#FFFFFF] ${
+        className={`fixed top-0 right-0 h-screen max-h-screen w-72 border-l z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between py-6 px-5 shadow-2xl bg-white dark:bg-[#111111] border-[#2F2F2F]/15 dark:border-[#2F2F2F] text-[#111111] dark:text-[#FFFFFF] overflow-y-auto overflow-x-hidden ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -583,8 +662,8 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
             <div className="flex items-center gap-3">
               <PlatformLogo size={42} />
               <div>
-                <span className="text-base font-black text-[#111111] dark:text-[#FFCB74] tracking-wider block leading-tight">إديوتك</span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">EDUTECH</span>
+                <span className="text-base font-black text-[#111111] dark:text-[#FFCB74] tracking-wider block leading-tight">مسار</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">MASAR</span>
               </div>
             </div>
             
@@ -617,7 +696,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
         </div>
 
         <div className="text-[11px] text-center border-t border-[#2F2F2F]/15 dark:border-[#2F2F2F] pt-4 text-gray-500 dark:text-gray-400">
-          منصة إديوتك للتعلم التكيفي الذكي
+          منصة مسار للتعلم التكيفي الذكي
         </div>
       </aside>
 
@@ -636,16 +715,25 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
             <PlatformLogo size={36} />
             <div className="text-right">
               <h2 className="text-sm font-bold leading-tight text-[#111111] dark:text-white">
-                منصة إديوتك الذكية
+                منصة مسار الذكية
               </h2>
-              <p className="text-[10px] text-[#FFCB74] font-medium tracking-wide">EduTech</p>
+              <p className="text-[10px] text-[#FFCB74] font-medium tracking-wide">MASAR</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFCB74]/15 border border-[#FFCB74]/40 text-[#111111] dark:text-[#FFCB74] text-xs font-bold">
-          <span>اختبار تحديد المستوى</span>
-          <span className="text-[10px] opacity-70">({courseTitle})</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFCB74]/15 border border-[#FFCB74]/40 text-[#111111] dark:text-[#FFCB74] text-xs font-bold">
+            <span>اختبار تحديد المستوى</span>
+            <span className="text-[10px] opacity-70">({courseTitle})</span>
+          </div>
+
+          {activePromptTitle && (
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 font-mono">
+              <Sparkles className="w-3 h-3 text-emerald-500" />
+              <span>مُولّد بالأمر: {activePromptTitle}</span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -689,7 +777,30 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
         {/* جسم الاختبار بحجم رشيق ومتناسق موحد */}
         <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 z-10 flex flex-col justify-center">
           
-          {!showResult ? (
+          {isLoadingQuestions ? (
+            <div className="bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-3xl p-10 flex flex-col items-center justify-center text-center shadow-xl">
+              <div className="relative mb-6">
+                <div className="absolute -inset-3 rounded-full bg-[#FFCB74]/30 blur-xl animate-pulse" />
+                <PlatformLogo size={70} className="relative z-10 animate-bounce" />
+              </div>
+              <div className="flex items-center gap-2 text-base font-black text-[#111111] dark:text-white mb-2">
+                <Sparkles className="w-5 h-5 text-[#FFCB74] animate-spin" />
+                <span>جاري توليد اختبار تحديد المستوى التكيفي الذكي...</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md">
+                نقوم بمعايرة أسئلة مقرر {courseTitle} بمستويات متدرجة (تأسيسي، بنائي، متقدم) لتحديد نقطة انطلاقك الدقيقة.
+              </p>
+              <div className="w-48 h-1.5 bg-gray-200 dark:bg-[#1f1f1f] rounded-full overflow-hidden mt-6">
+                <div className="w-full h-full bg-[#FFCB74] animate-pulse" />
+              </div>
+            </div>
+          ) : isEvaluating ? (
+            <div className="bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-3xl p-10 flex flex-col items-center justify-center text-center shadow-xl">
+              <Loader2 className="w-10 h-10 text-[#FFCB74] animate-spin mb-4" />
+              <h3 className="text-base font-black text-[#111111] dark:text-white mb-1">جاري تحليل إجاباتك ومعايرة مستواك الأكاديمي...</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">يتم حفظ النتائج وتحديث مسارك المعرفي في قاعدة بيانات Firestore</p>
+            </div>
+          ) : (!showResult && currentQuestion) ? (
             <div className="bg-white dark:bg-[#2F2F2F] border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-xl transition-all">
               
               <div className="mb-6">
@@ -812,7 +923,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
                 </div>
                 <div className="bg-[#FFCB74]/15 border border-[#FFCB74]/40 rounded-xl p-2.5">
                   <span className="text-[10px] text-[#FFCB74] font-bold block mb-0.5">المستوى</span>
-                  <span className="text-sm font-black text-[#111111] dark:text-white">{determineLevel(score)}</span>
+                  <span className="text-sm font-black text-[#111111] dark:text-white">{determinedLevel}</span>
                 </div>
               </div>
 
@@ -827,7 +938,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
                     </span>
                   </div>
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#FFCB74]/20 text-[#111111] dark:text-[#FFCB74]">
-                    المسار المخصص: {determineLevel(score)}
+                    المسار المخصص: {determinedLevel}
                   </span>
                 </div>
 
@@ -847,7 +958,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
                     {/* عقد المسار موحدة الأبعاد بالكامل */}
                     <div className="w-full max-w-sm flex flex-col items-center">
                       {activeConceptTree.map((node, index) => {
-                        const calculatedLevel = determineLevel(score);
+                        const calculatedLevel = determinedLevel;
                         const startIndex = getStartingConceptIndex(calculatedLevel);
 
                         const isCurrent = index === startIndex;
@@ -993,10 +1104,52 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
 
               </div>
 
+              {/* مراجعة الإجابات التفاعلية وتفسيرات الذكاء الاصطناعي */}
+              {evalBreakdown.length > 0 && (
+                <div className="mb-5 border border-[#2F2F2F]/20 dark:border-[#2F2F2F] rounded-2xl p-4 bg-white dark:bg-[#181818] shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setShowExplanations(!showExplanations)}
+                    className="w-full flex items-center justify-between text-xs font-black text-[#FFCB74] cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4" />
+                      <span>مراجعة إجاباتك وشروحات الذكاء الاصطناعي البيداغوجية ({evalBreakdown.length} أسئلة)</span>
+                    </div>
+                    {showExplanations ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {showExplanations && (
+                    <div className="mt-3.5 space-y-2.5 text-right border-t border-[#2F2F2F]/20 dark:border-[#2F2F2F] pt-3">
+                      {evalBreakdown.map((item: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-xl border text-xs leading-relaxed ${
+                            item.is_correct
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                              : 'bg-red-500/10 border-red-500/30 text-red-800 dark:text-red-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-black mb-1">
+                            <span>السؤال #{idx + 1} - {item.concept || 'مفهوم برمجى'}</span>
+                            <span className="text-[11px]">{item.is_correct ? '✓ إجابة صحيحة' : '✗ إجابة تحتاج مراجعة'}</span>
+                          </div>
+                          {item.explanation && (
+                            <p className="text-[11px] text-gray-700 dark:text-gray-200 mt-1">
+                              💡 {item.explanation}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* أزرار الإجراءات: زر المتابعة، زر إعادة الاختبار، وزر العودة للمقررات لعدم حصر الطالب */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
                 <button
-                  onClick={() => onFinishTest(score, determineLevel(score))}
+                  onClick={() => onFinishTest(score, determinedLevel)}
                   className="w-full sm:w-auto py-2.5 px-6 rounded-full font-black text-[#111111] text-xs bg-[#FFCB74] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <span>الانتقال لدراسة المفهوم المحدد مباشرة</span>
@@ -1026,7 +1179,7 @@ export const PlacementTest: React.FC<PlacementTestProps> = ({
         </main>
 
         <footer className="w-full py-4 text-center text-xs text-gray-500 border-t border-[#2F2F2F]/20 dark:border-[#2F2F2F]/50 z-10 bg-white/60 dark:bg-[#111111]/60 backdrop-blur-md">
-          منصة إديوتك للتعلم التكيفي الذكي • جميع الحقوق محفوظة
+          منصة مسار للتعلم التكيفي الذكي • جميع الحقوق محفوظة
         </footer>
 
       </div>

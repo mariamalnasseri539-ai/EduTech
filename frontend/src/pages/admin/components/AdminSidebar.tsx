@@ -7,7 +7,9 @@ import {
   Cpu,
   X,
   Shield,
-  Sparkles
+  Sparkles,
+  Terminal,
+  Settings
 } from 'lucide-react';
 import { AdminSection, AdminNavItem } from '../types';
 import { PlatformLogo } from '../../../components/common/PlatformLogo';
@@ -41,9 +43,16 @@ const NAV_ITEMS: AdminNavItem[] = [
   },
   {
     id: 'courses',
-    title: 'المقررات وخرائط المنهج',
-    subtitle: 'Courses & Topic Maps',
+    title: 'إدارة المقررات',
+    subtitle: 'Course Management',
     iconName: 'courses',
+  },
+  {
+    id: 'prompts',
+    title: 'إدارة الأوامر',
+    subtitle: 'Prompt Engineering',
+    iconName: 'prompts',
+    badge: '4 أقسام',
   },
   {
     id: 'telemetry',
@@ -51,6 +60,12 @@ const NAV_ITEMS: AdminNavItem[] = [
     subtitle: 'AI Telemetry',
     iconName: 'telemetry',
     badge: 'Gemini 1.5',
+  },
+  {
+    id: 'settings',
+    title: 'الإعدادات والمظهر',
+    subtitle: 'Settings & Appearance',
+    iconName: 'settings',
   },
 ];
 
@@ -74,8 +89,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         return <TrendingUp className={iconClass} />;
       case 'courses':
         return <BookOpen className={iconClass} />;
+      case 'prompts':
+        return <Terminal className={iconClass} />;
       case 'telemetry':
         return <Cpu className={iconClass} />;
+      case 'settings':
+        return <Settings className={iconClass} />;
       default:
         return <Shield className={iconClass} />;
     }
@@ -94,7 +113,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
       {/* شريط السايد بار الرئيسي للأدمن */}
       <aside
-        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-[#181818] border-l border-slate-200 dark:border-[#2F2F2F] z-50 flex flex-col justify-between py-6 px-4 shadow-xl lg:shadow-none transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 right-0 h-screen max-h-screen w-72 bg-white dark:bg-[#181818] border-l border-slate-200 dark:border-[#2F2F2F] z-50 flex flex-col justify-between py-6 px-4 shadow-xl lg:shadow-none transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-y-auto overflow-x-hidden ${
           isOpenMobile ? 'translate-x-0' : 'translate-x-full'
         }`}
         dir="rtl"
@@ -107,7 +126,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <div className="text-right">
                 <div className="flex items-center gap-1.5">
                   <span className="font-extrabold text-base text-[#2F2F2F] dark:text-white leading-tight">
-                    إديوتك
+                    مسار
                   </span>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#FFCB74]/20 text-[#2F2F2F] dark:text-[#FFCB74] border border-[#FFCB74]/40">
                     أدمن
@@ -198,7 +217,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </p>
           </div>
           <div className="mt-3 text-[10px] text-center text-slate-400 dark:text-slate-500 font-mono">
-            EduTech Admin • v1.0.0
+            MASAR Admin • v1.0.0
           </div>
         </div>
       </aside>

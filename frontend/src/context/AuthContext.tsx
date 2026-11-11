@@ -42,9 +42,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try { parsedSaved = JSON.parse(saved); } catch {}
     }
 
-    const email = firebaseUser?.email || parsedSaved.email || 'user.google@edutech.edu';
+    const email = firebaseUser?.email || parsedSaved.email || 'user.google@masar.edu';
     const uid = firebaseUser?.uid || parsedSaved.uid || 'google-user-101';
-    const name = displayName || firebaseUser?.displayName || parsedSaved.displayName || 'مستخدم إديوتك';
+    const name = displayName || firebaseUser?.displayName || parsedSaved.displayName || 'مستخدم مسار';
     const isAdmin = email.includes('admin');
     const fallbackRole: 'STD' | 'ADM' = isAdmin ? 'ADM' : 'STD';
 

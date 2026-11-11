@@ -2,7 +2,6 @@ import React from 'react';
 import { Menu, Shield, LogOut, ChevronLeft } from 'lucide-react';
 import { AdminSection } from '../types';
 import { PlatformLogo } from '../../../components/common/PlatformLogo';
-import { ThemeToggle } from '../../../components/common/ThemeToggle';
 import { useAuth } from '../../../context/AuthContext';
 
 interface AdminHeaderProps {
@@ -15,8 +14,10 @@ const SECTION_TITLES: Record<AdminSection, { ar: string; en: string }> = {
   overview: { ar: 'نظرة عامة والمؤشرات', en: 'Overview & Key Metrics' },
   users: { ar: 'المستخدمين والصلاحيات', en: 'Users & Permissions' },
   cohort: { ar: 'تحليلات الدفعة المعرفية', en: 'Cohort Analytics' },
-  courses: { ar: 'المقررات وخرائط المنهج', en: 'Courses & Topic Maps' },
+  courses: { ar: 'إدارة المقررات', en: 'Course Management' },
+  prompts: { ar: 'إدارة الأوامر والبرومبت', en: 'Prompt Engineering' },
   telemetry: { ar: 'مراقبة الذكاء الاصطناعي', en: 'AI Telemetry' },
+  settings: { ar: 'إعدادات المنصة والمظهر', en: 'Platform Settings' },
 };
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
@@ -27,7 +28,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const { userProfile, role, logout } = useAuth();
 
   const adminName = userProfile?.display_name || userProfile?.email?.split('@')[0] || 'مسؤول المنصة';
-  const adminEmail = userProfile?.email || 'admin@edutech.edu';
+  const adminEmail = userProfile?.email || 'admin@masar.edu';
   const sectionInfo = SECTION_TITLES[currentSection];
 
   return (
@@ -54,7 +55,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               لوحة تحكم الإدارة
             </h1>
             <p className="text-[10px] text-[#2F2F2F]/60 dark:text-slate-400 font-mono">
-              EduTech Admin Portal
+              Masar Admin Portal
             </p>
           </div>
         </div>
@@ -86,9 +87,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             <span>الرئيسية</span>
           </button>
         )}
-
-        {/* مفتاح الثيم المائي المعتمد */}
-        <ThemeToggle />
 
         {/* فاصل */}
         <div className="h-7 w-px bg-slate-200 dark:bg-[#2F2F2F] hidden sm:block" />
